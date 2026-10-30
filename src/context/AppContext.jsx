@@ -75,7 +75,9 @@ export function AppProvider({ children }) {
     const assets = holdings.map(h => ({...h}));
     const totalBase = assets.reduce((s,h)=>s+h.quantity*h.avgBuyPrice,0);
     const totalValue = assets.reduce((s,h)=>s+h.quantity*(markets.find(m=>m.id===h.id)?.price || h.avgBuyPrice),0);
-    return { totalValue: totalValue + cash, investedValue:totalValue, totalBase, totalPl:totalValue-totalBase, assets };
+    const unrealizedPl = assets.reduce((sum,h)=>sum+h.quantity*((markets.find(m=>m.id===h.id)?.price || h.avgBuyPrice)-h.avgBuyPrice),0);
+    const realizedPl = orders.reduce((sum,order)=>sum+Number(order.realizedPnl||0),0);
+    return { totalValue: totalValue + cash, investedValue:totalValue, totalBase, totalPl:unrealizedPl, unrealizedPl, realizedPl, totalProfitLoss:unrealizedPl+realizedPl, assets };
   },[holdings,markets,cash]);
 
   const trade = useCallback(({side,assetId,quantity,stopLoss=0,takeProfit=0,triggerReason='',executionPrice=0}) => {
@@ -104,7 +106,8 @@ export function AppProvider({ children }) {
       setCash(v=>{const n=v+proceeds; persist({cash:n}); return n;});
       setHoldings(prev=>{const next=prev.map(h=>h.id===asset.id?{...h,quantity:h.quantity-qty}:h).filter(h=>h.quantity>1e-10);persist({holdings:next});return next;});
     } else throw new Error('Unsupported order type.');
-    const order={id:'ORD-'+Date.now(),type:side.toUpperCase(),assetId:asset.id,symbol:asset.symbol,name:asset.name,quantity:qty,price,total:gross,fee,stopLoss:sl,takeProfit:tp,triggerReason,status:'FILLED',createdAt:new Date().toISOString()};
+    const realizedPnl=side==='sell'?(price-Number(holdings.find(h=>h.id===asset.id)?.avgBuyPrice||price))*qty-fee:0;
+    const order={id:'ORD-'+Date.now(),type:side.toUpperCase(),assetId:asset.id,symbol:asset.symbol,name:asset.name,quantity:qty,price,total:gross,fee,realizedPnl,stopLoss:sl,takeProfit:tp,triggerReason,status:'FILLED',createdAt:new Date().toISOString()};
     setOrders(prev=>{const next=[order,...prev].slice(0,100);persist({orders:next});return next;});
     setTransactions(prev=>{const next=[{id:'TX-'+Date.now(),type:side.toUpperCase(),description:side.toUpperCase()+' '+qty+' '+asset.symbol,amount:side==='buy'?-gross:gross,createdAt:new Date().toISOString()},...prev].slice(0,100);persist({transactions:next});return next;});
     return order;
