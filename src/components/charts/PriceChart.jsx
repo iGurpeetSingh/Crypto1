@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 import './Chart.css';
 
 const toTradingViewSymbol = value => {
@@ -7,74 +7,33 @@ const toTradingViewSymbol = value => {
   return 'BINANCE:' + pair;
 };
 
-export default function PriceChart({ symbol = 'BTC', title = 'BTC/USDT', height = 460 }) {
-  const hostRef = useRef(null);
-  const widgetId = 'crypto1-tv-' + useId().replace(/:/g, '');
-  const [status, setStatus] = useState('Loading TradingView market chart…');
-  const [failed, setFailed] = useState(false);
+export default function PriceChart({ symbol = 'BTC', title = 'BTC/USDT', height = 520 }) {
+  const [status, setStatus] = useState('Loading live interactive chart');
   const tvSymbol = toTradingViewSymbol(symbol || title);
   const chartHeight = Math.max(460, Number(height) || 520);
-
-  useEffect(() => {
-    const host = hostRef.current;
-    if (!host) return undefined;
-
-    setStatus('Connecting to live exchange chart…');
-    setFailed(false);
-    host.replaceChildren();
-
-    const widget = document.createElement('div');
-    widget.id = widgetId;
-    widget.className = 'tradingview-widget-container__widget';
-    widget.style.width = '100%';
-    widget.style.height = chartHeight + 'px';
-
-    const copyright = document.createElement('div');
-    copyright.className = 'tradingview-widget-copyright';
-    const link = document.createElement('a');
-    link.href = 'https://www.tradingview.com/';
-    link.target = '_blank';
-    link.rel = 'noopener noreferrer';
-    link.textContent = 'View market chart on TradingView';
-    copyright.appendChild(link);
-
-    const script = document.createElement('script');
-    script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js';
-    script.type = 'text/javascript';
-    script.async = true;
-    script.text = JSON.stringify({
-      autosize: false,
-      width: '100%',
-      height: chartHeight,
+  const chartUrl = useMemo(() => {
+    const params = new URLSearchParams({
       symbol: tvSymbol,
       interval: '15',
       timezone: 'Asia/Kolkata',
       theme: 'dark',
       style: '1',
       locale: 'en',
-      withdateranges: true,
-      hide_side_toolbar: false,
-      allow_symbol_change: true,
-      save_image: false,
-      calendar: false,
-      details: true,
-      hotlist: false,
-      studies: ['Volume@tv-basicstudies'],
+      withdateranges: '1',
+      hide_top_toolbar: '0',
+      hide_side_toolbar: '0',
+      allow_symbol_change: '1',
+      save_image: '0',
+      calendar: '0',
+      details: '1',
+      hotlist: '0',
+      studies: 'Volume@tv-basicstudies',
+      backgroundColor: '#131722',
+      gridColor: 'rgba(42,46,57,0.06)',
       support_host: 'https://www.tradingview.com'
     });
-    script.onload = () => setStatus('Live interactive market chart');
-    script.onerror = () => {
-      setFailed(true);
-      setStatus('TradingView chart could not load. Check your network or content blocker.');
-    };
-
-    host.append(widget, copyright, script);
-    return () => {
-      script.onload = null;
-      script.onerror = null;
-      host.replaceChildren();
-    };
-  }, [tvSymbol, widgetId, chartHeight]);
+    return 'https://www.tradingview.com/widgetembed/?' + params.toString();
+  }, [tvSymbol]);
 
   return (
     <section className="trading-chart tradingview-chart-shell">
@@ -87,19 +46,21 @@ export default function PriceChart({ symbol = 'BTC', title = 'BTC/USDT', height 
           Open full chart ↗
         </a>
       </div>
-      <div
-        className="tradingview-widget-container"
-        ref={hostRef}
-        style={{ width: '100%', height: chartHeight + 28, minHeight: chartHeight + 28 }}
-        aria-label={tvSymbol + ' interactive candlestick trading chart'}
-      />
-      {failed && (
-        <div className="trading-chart-error" role="status">
-          Chart loading was blocked by the browser or network. <a href={'https://www.tradingview.com/chart/?symbol=' + encodeURIComponent(tvSymbol)} target="_blank" rel="noopener noreferrer">Open this live chart directly</a>.
-        </div>
-      )}
+      <div className="tradingview-frame-wrap" style={{ height: chartHeight, minHeight: chartHeight }}>
+        <iframe
+          key={tvSymbol}
+          title={tvSymbol + ' live interactive candlestick chart'}
+          src={chartUrl}
+          className="tradingview-frame"
+          loading="eager"
+          allow="fullscreen; clipboard-write"
+          referrerPolicy="strict-origin-when-cross-origin"
+          onLoad={() => setStatus('Live interactive market chart')}
+          onError={() => setStatus('Chart unavailable — open full chart')}
+        />
+      </div>
       <div className="chart-footnote">
-        Interactive live market chart powered by TradingView. Use the chart toolbar for timeframes, indicators, drawing tools, zoom and crosshair. Orders in Crypto1 remain simulated.
+        Live market chart with timeframes, indicators, drawing tools, zoom and crosshair. Crypto1 orders remain simulated.
       </div>
     </section>
   );
