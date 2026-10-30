@@ -8,7 +8,7 @@ import './ProfilePage.css';
 
 const money=value=>Number(value||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
 export default function ProfilePage(){
- const {cash,holdings,orders,pendingOrders,portfolio}=useApp();
+ const {cash,holdings,orders,pendingOrders}=useApp();
  const [profile,setProfile]=useState(()=>getStoredProfile());
  const [loading,setLoading]=useState(false);
  useEffect(()=>{
