@@ -13,6 +13,7 @@ const money = value => Number(value).toLocaleString(undefined, {
 });
 const marketPair = symbol => {
   const normalized = String(symbol || 'BTC').toUpperCase();
+  if (normalized === 'USDT') return 'USDTUSDC';
   return normalized.endsWith('USDT') ? normalized : normalized + 'USDT';
 };
 
