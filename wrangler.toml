@@ -4,8 +4,8 @@ compatibility_date = "2026-10-30"
 workers_dev = true
 
 [vars]
-ENVIRONMENT = "development"
-ALLOW_DEV_OTP = "true"
+ENVIRONMENT = "production"
+ALLOW_DEV_OTP = "false"
 
 [[d1_databases]]
 binding = "DB"
