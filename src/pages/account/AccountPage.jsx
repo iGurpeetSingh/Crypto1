@@ -1,3 +1,4 @@
+import {apiUrl} from '../../services/api';
 import {useEffect,useState} from 'react';
 import {Link,useNavigate} from 'react-router-dom';
 import {GlassCard} from '../../components/common/GlassCard';
@@ -12,13 +13,13 @@ export default function AccountPage(){
  useEffect(()=>{
   const token=getSessionToken();
   if(!token){setLoading(false);return;}
-  fetch('/api/profile/me',{headers:{Authorization:'Bearer '+token}})
+  fetch(apiUrl('/api/profile/me'),{headers:{Authorization:'Bearer '+token}})
    .then(async r=>{const data=await r.json().catch(()=>({}));if(!r.ok)throw new Error(data.error||'Could not load account');return data.profile;})
    .then(p=>{setProfile(p);setName(p.name||'');saveStoredProfile(p);})
    .catch(e=>setError(e.message))
    .finally(()=>setLoading(false));
  },[]);
- const save=async e=>{e.preventDefault();setError('');setMessage('');const token=getSessionToken();if(!token){setError('Sign in with email OTP to update your verified profile.');return;}setSaving(true);try{const response=await fetch('/api/profile/update',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({fullName:name})});const data=await response.json().catch(()=>({}));if(!response.ok)throw new Error(data.error||'Profile update failed');setProfile(data.profile);saveStoredProfile(data.profile);setMessage('Profile updated successfully.');}catch(e){setError(e.message)}finally{setSaving(false)}};
+ const save=async e=>{e.preventDefault();setError('');setMessage('');const token=getSessionToken();if(!token){setError('Sign in with email OTP to update your verified profile.');return;}setSaving(true);try{const response=await fetch(apiUrl('/api/profile/update'),{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({fullName:name})});const data=await response.json().catch(()=>({}));if(!response.ok)throw new Error(data.error||'Profile update failed');setProfile(data.profile);saveStoredProfile(data.profile);setMessage('Profile updated successfully.');}catch(e){setError(e.message)}finally{setSaving(false)}};
  const signOut=()=>{logout();setProfile(null);setName('');navigate('/login');};
  const isSignedIn=Boolean(getSessionToken())&&Boolean(profile);
  return <div className="page-content">
