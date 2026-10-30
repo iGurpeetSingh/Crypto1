@@ -1,44 +1,9 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { GlassCard } from '../../components/common/GlassCard';
-
-export default function RegisterPage() {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const navigate = useNavigate();
-
-  const handleRegister = async (e) => {
-    e.preventDefault();
-    navigate('/dashboard');
-  };
-
-  return (
-    <div className="page-content" style={{ minHeight: 'calc(100vh - 64px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-      <GlassCard style={{ maxWidth: '400px', width: '100%', padding: '32px' }}>
-        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-          <h1 style={{ margin: '0 0 8px' }}>Create Account</h1>
-          <p style={{ margin: '0', opacity: 0.7 }}>Join the simulated crypto platform</p>
-        </div>
-        <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <label style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '14px', fontWeight: 500 }}>
-            Full Name
-            <input type="text" value={name} onChange={(e) => setName(e.target.value)} style={{ marginTop: '4px', padding: '10px', border: '1px solid var(--border)', borderRadius: '8px', background: 'var(--bg-card)' }} />
-          </label>
-          <label style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '14px', fontWeight: 500 }}>
-            Email
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} style={{ marginTop: '4px', padding: '10px', border: '1px solid var(--border)', borderRadius: '8px', background: 'var(--bg-card)' }} />
-          </label>
-          <label style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '14px', fontWeight: 500 }}>
-            Password
-            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} style={{ marginTop: '4px', padding: '10px', border: '1px solid var(--border)', borderRadius: '8px', background: 'var(--bg-card)' }} />
-          </label>
-          <button type="submit" className="btn btn--primary" style={{ width: '100%', padding: '12px' }}>Create Account</button>
-        </form>
-        <p style={{ marginTop: '20px', fontSize: '14px', textAlign: 'center' }}>
-          Already have an account? <a href="/login" style={{ color: 'var(--accent)', cursor: 'pointer' }}>Sign in</a>
-        </p>
-      </GlassCard>
-    </div>
-  );
+import {useState} from 'react';
+import {NavLink,useNavigate} from 'react-router-dom';
+import {GlassCard} from '../../components/common/GlassCard';
+export default function RegisterPage(){
+ const [name,setName]=useState(''),[email,setEmail]=useState(''),[password,setPassword]=useState(''),[error,setError]=useState('');
+ const navigate=useNavigate();
+ const submit=e=>{e.preventDefault();setError('');if(name.trim().length<2)return setError('Enter your full name.');if(password.length<8)return setError('Password must be at least 8 characters.');try{localStorage.setItem('crypto1_demo_user',JSON.stringify({name:name.trim(),email:email.trim(),createdAt:new Date().toISOString()}));navigate('/dashboard')}catch{return setError('Unable to save demo profile in this browser.')}};
+ return <main className="auth-page"><GlassCard className="auth-card"><div className="auth-brand"><span className="sidebar-logo-icon">₿</span> CryptoDash</div><h1>Create your account</h1><p className="auth-subtitle">Start exploring the simulated crypto exchange</p><form className="auth-form" onSubmit={submit}><label>Full name<input autoComplete="name" required value={name} onChange={e=>setName(e.target.value)} placeholder="Your name"/></label><label>Email address<input type="email" autoComplete="email" required value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@example.com"/></label><label>Password<input type="password" autoComplete="new-password" minLength="8" required value={password} onChange={e=>setPassword(e.target.value)} placeholder="At least 8 characters"/></label>{error&&<p className="text-danger">{error}</p>}<button className="btn btn--primary" type="submit">Create demo account</button></form><p className="auth-switch">Already registered? <NavLink to="/login">Sign in</NavLink></p><p className="auth-note">Demo profile stored in this browser only. No real account or funds are created.</p></GlassCard></main>;
 }
