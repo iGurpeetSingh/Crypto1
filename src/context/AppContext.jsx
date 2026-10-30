@@ -72,7 +72,7 @@ export function AppProvider({ children }) {
     return { totalValue: totalValue + cash, investedValue:totalValue, totalBase, totalPl:totalValue-totalBase, assets };
   },[holdings,markets,cash]);
 
-  const trade = useCallback(({side,assetId,quantity,stopLoss=0,takeProfit=0}) => {
+  const trade = useCallback(({side,assetId,quantity,stopLoss=0,takeProfit=0,triggerReason=''}) => {
     const asset = markets.find(m=>m.id===assetId);
     const qty = Number(quantity);
     if (!asset || !Number.isFinite(qty) || qty <= 0) throw new Error('Select a valid asset and quantity.');
@@ -98,11 +98,25 @@ export function AppProvider({ children }) {
       setCash(v=>{const n=v+proceeds; persist({cash:n}); return n;});
       setHoldings(prev=>{const next=prev.map(h=>h.id===asset.id?{...h,quantity:h.quantity-qty}:h).filter(h=>h.quantity>1e-10);persist({holdings:next});return next;});
     } else throw new Error('Unsupported order type.');
-    const order={id:'ORD-'+Date.now(),type:side.toUpperCase(),assetId:asset.id,symbol:asset.symbol,name:asset.name,quantity:qty,price,total:gross,fee,stopLoss:sl,takeProfit:tp,status:'FILLED',createdAt:new Date().toISOString()};
+    const order={id:'ORD-'+Date.now(),type:side.toUpperCase(),assetId:asset.id,symbol:asset.symbol,name:asset.name,quantity:qty,price,total:gross,fee,stopLoss:sl,takeProfit:tp,triggerReason,status:'FILLED',createdAt:new Date().toISOString()};
     setOrders(prev=>{const next=[order,...prev].slice(0,100);persist({orders:next});return next;});
     setTransactions(prev=>{const next=[{id:'TX-'+Date.now(),type:side.toUpperCase(),description:side.toUpperCase()+' '+qty+' '+asset.symbol,amount:side==='buy'?-gross:gross,createdAt:new Date().toISOString()},...prev].slice(0,100);persist({transactions:next});return next;});
     return order;
   },[markets,holdings,cash,persist]);
+
+  // Simulated protective exits: evaluate saved stop-loss / take-profit levels on every market update.
+  useEffect(() => {
+    const triggered = holdings.find(h => {
+      const current = markets.find(m => m.id === h.id)?.price;
+      return current > 0 && h.quantity > 0 && ((h.stopLoss > 0 && current <= h.stopLoss) || (h.takeProfit > 0 && current >= h.takeProfit));
+    });
+    if (triggered) {
+      const current = markets.find(m => m.id === triggered.id)?.price;
+      const reason = triggered.stopLoss > 0 && current <= triggered.stopLoss ? 'STOP_LOSS' : 'TAKE_PROFIT';
+      try { trade({ side: 'sell', assetId: triggered.id, quantity: triggered.quantity, triggerReason: reason }); }
+      catch (error) { console.warn('Protective exit failed:', error.message); }
+    }
+  }, [markets, holdings, trade]);
 
   const moveFunds = useCallback(({from,to,amount})=>{
     const value=Number(amount);
