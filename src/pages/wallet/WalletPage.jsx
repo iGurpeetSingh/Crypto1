@@ -1,3 +1,4 @@
+import {apiUrl} from '../../services/api';
 import {useEffect,useState} from 'react';
 import {GlassCard} from '../../components/common/GlassCard';
 import MetricCard from '../../components/cards/MetricCard';
@@ -21,7 +22,7 @@ export default function WalletPage(){
  const run=fn=>{setNotice('');setError('');try{fn();setNotice('Demo transaction completed.');}catch(e){setError(e.message)}};
  const refreshRealWallet=async()=>{
   const token=getSessionToken();if(!token)return;
-  const response=await fetch('/api/profile/me',{headers:{Authorization:'Bearer '+token}});
+  const response=await fetch(apiUrl('/api/profile/me'),{headers:{Authorization:'Bearer '+token}});
   const data=await response.json().catch(()=>({}));
   if(!response.ok)throw new Error(data.error||'Could not load real wallet balance');
   setInrBalance(Number(data.profile.balanceInr||0));saveStoredProfile(data.profile);
@@ -35,7 +36,7 @@ export default function WalletPage(){
   if(!Number.isInteger(amountValue)||amountValue<100||amountValue>500000){setPaymentError('Enter a whole amount between ₹100 and ₹5,00,000.');return;}
   setPaymentBusy(true);
   try{
-   const response=await fetch('/api/payments/create-order',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({amountInr:amountValue})});
+   const response=await fetch(apiUrl('/api/payments/create-order',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({amountInr:amountValue})});
    const order=await response.json().catch(()=>({}));
    if(!response.ok)throw new Error(order.error||'Payment order creation failed.');
    await loadRazorpay();
@@ -46,7 +47,7 @@ export default function WalletPage(){
     theme:{color:'#2563EB'},
     handler:async payment=>{
      try{
-      const verified=await fetch('/api/payments/verify',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify(payment)});
+      const verified=await fetch(apiUrl('/api/payments/verify',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify(payment)});
       const result=await verified.json().catch(()=>({}));
       if(!verified.ok)throw new Error(result.error||'Payment verification failed.');
       await refreshRealWallet();
