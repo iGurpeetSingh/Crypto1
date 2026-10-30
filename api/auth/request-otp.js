@@ -13,6 +13,8 @@ export default async function handler(req,res){
   if(purpose==='register'&&existing.length){json(res,409,{error:'An account with this email already exists. Please sign in.'});return;}
   if(purpose==='login'&&!existing.length){json(res,404,{error:'No account found with this email. Please create an account first.'});return;}
   if(purpose==='register'&&String(fullName).trim().length<2){json(res,400,{error:'Enter your full name.'});return;}
+  const previous=await db('auth_otps?email=eq.'+encodeURIComponent(normalized)+'&purpose=eq.'+purpose+'&select=created_at&limit=1');
+  if(previous.length&&Date.now()-new Date(previous[0].created_at).getTime()<60000){json(res,429,{error:'Please wait 60 seconds before requesting another OTP.'});return;}
   const otp=String(randomInt(100000,1000000));
   const expiresAt=new Date(Date.now()+5*60*1000).toISOString();
   await db('auth_otps?on_conflict=email,purpose',{
