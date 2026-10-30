@@ -69,3 +69,15 @@
 .chart-footnote{font-size:.7rem;color:var(--text-secondary);padding-top:8px}
 .trading-chart-empty{min-height:260px;display:grid;place-items:center;color:var(--text-secondary);background:var(--surface);border-radius:12px}
 @media(max-width:600px){.trading-chart-toolbar{align-items:flex-start}.chart-range-tabs{width:100%;justify-content:space-between}.chart-range-tabs button{flex:1;padding:7px 4px}.trading-chart-canvas svg{min-height:210px}}
+
+/* Exchange OHLC terminal chart controls */
+.chart-symbol-info{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.chart-candle-readout{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:2px 0 12px;font-size:.72rem;color:var(--text-secondary)}
+.chart-candle-readout b{color:var(--text-primary);font-variant-numeric:tabular-nums}
+.chart-candle-readout .candle-up{color:#16C784}
+.chart-candle-readout .candle-down{color:#EA3943}
+.trading-chart-canvas svg{cursor:crosshair;touch-action:pan-y;user-select:none;-webkit-user-select:none}
+.chart-controls{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding-top:8px;font-size:.72rem;color:var(--text-secondary)}
+.chart-controls button{border:1px solid var(--glass-border);background:transparent;color:var(--text-secondary);padding:5px 9px;border-radius:6px;cursor:pointer}
+.chart-controls button.active{color:var(--text-primary);background:var(--surface-hover)}
+@media(max-width:600px){.chart-candle-readout{gap:8px;font-size:.65rem}.chart-controls{gap:8px}}
