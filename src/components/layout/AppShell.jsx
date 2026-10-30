@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { routeConfig, groupLabels } from '../../app/routeConfig';
 import TopBar from './TopBar';
@@ -24,20 +25,23 @@ const essential=[
 ];
 export default function AppShell(){
  const [sidebarOpen,setSidebarOpen]=useState(false);
- const [collapsed,setCollapsed]=useState(false);
  const location=useLocation();
  useEffect(()=>{setSidebarOpen(false)},[location.pathname]);
  useEffect(()=>{const onKey=e=>{if(e.key==='Escape')setSidebarOpen(false)};window.addEventListener('keydown',onKey);return()=>window.removeEventListener('keydown',onKey)},[]);
+ useEffect(()=>{if(!sidebarOpen)return;const previous=document.body.style.overflow;document.body.style.overflow='hidden';return()=>{document.body.style.overflow=previous}},[sidebarOpen]);
  const grouped=essential.reduce((acc,r)=>{(acc[r.group] ||= []).push(r);return acc},{});
+ const drawer=<>
+  {sidebarOpen&&<button className="sidebar-backdrop" aria-label="Close navigation menu" onClick={()=>setSidebarOpen(false)}/>}
+  <aside className={`sidebar ${sidebarOpen?'sidebar--open':''}`} aria-label="Main navigation" aria-hidden={!sidebarOpen}>
+   <div className="sidebar-header"><div className="sidebar-logo"><div className="sidebar-logo-icon">₿</div><span>Crypto<span style={{color:'var(--secondary)'}}>Dash</span></span></div><button className="topbar-btn topbar-btn--icon sidebar-close" onClick={()=>setSidebarOpen(false)} aria-label="Close menu">×</button></div>
+   <nav className="sidebar-nav">{Object.entries(grouped).map(([group,routes])=><div key={group} className="nav-group"><div className="nav-group-label">{groupLabels[group]||group}</div>{routes.map(r=><NavLink key={r.path} to={r.path} end className={({isActive})=>isActive?'nav-item nav-item--active':'nav-item'}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d={icons[group]||icons.overview}/></svg><span>{r.name}</span></NavLink>)}</div>)}</nav>
+   <div className="sidebar-footer"><span className="demo-badge">SIMULATED TRADING</span></div>
+  </aside>
+ </>;
  return <div className="layout">
- <div className="bg-orb bg-orb--1"/><div className="bg-orb bg-orb--2"/><div className="bg-orb bg-orb--3"/>
- {sidebarOpen&&<button className="sidebar-backdrop" aria-label="Close navigation menu" onClick={()=>setSidebarOpen(false)}/>}
- <aside className={`sidebar ${sidebarOpen?'sidebar--open':''} ${collapsed?'sidebar--collapsed':''}`}>
-  <div className="sidebar-header"><div className="sidebar-logo"><div className="sidebar-logo-icon">₿</div><span>Crypto<span style={{color:'var(--secondary)'}}>Dash</span></span></div><button className="topbar-btn topbar-btn--icon sidebar-close" onClick={()=>setSidebarOpen(false)} aria-label="Close menu">×</button></div>
-  <nav className="sidebar-nav">{Object.entries(grouped).map(([group,routes])=><div key={group} className="nav-group"><div className="nav-group-label">{groupLabels[group]||group}</div>{routes.map(r=><NavLink key={r.path} to={r.path} end className={({isActive})=>isActive?'nav-item nav-item--active':'nav-item'}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d={icons[group]||icons.overview}/></svg><span>{r.name}</span></NavLink>)}</div>)}</nav>
-  <div className="sidebar-footer"><span className="demo-badge">SIMULATED TRADING</span></div>
- </aside>
- <main className="main"><TopBar onMenuClick={()=>setSidebarOpen(v=>!v)} menuOpen={sidebarOpen}/><div className="content"><Outlet/></div></main>
+  <div className="bg-orb bg-orb--1"/><div className="bg-orb bg-orb--2"/><div className="bg-orb bg-orb--3"/>
+  <main className="main"><TopBar onMenuClick={()=>setSidebarOpen(v=>!v)} menuOpen={sidebarOpen}/><div className="content"><Outlet/></div></main>
+  {typeof document!=='undefined'&&createPortal(drawer,document.body)}
  </div>;
 }
 export {AppShell};
