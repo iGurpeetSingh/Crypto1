@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, Outlet } from 'react-router-dom';
 import { routeConfig, groupLabels } from '../../app/routeConfig';
 import TopBar from './TopBar';
 import './AppShell.css';
@@ -20,7 +20,7 @@ const icons = {
   misc: 'M4 4v5h.582m15.356 2A8.001 8.001 0 0 0 4.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 0 0 15.357-2m0 0H15',
 };
 
-export default function AppShell({ children }) {
+export default function AppShell() {
   const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth > 768);
   const [collapsed, setCollapsed] = useState(false);
 
@@ -109,7 +109,7 @@ export default function AppShell({ children }) {
       <main className="main">
         <TopBar onMenuClick={() => setSidebarOpen(!sidebarOpen)} menuOpen={sidebarOpen} />
         <div className="content">
-          {children}
+          <Outlet />
         </div>
       </main>
     </div>
