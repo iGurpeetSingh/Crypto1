@@ -39,7 +39,7 @@ async function route(req,env){
    if(user)return json({error:'Account already exists.'},409);
    const id=crypto.randomUUID(),now=Date.now();
    await env.DB.prepare('INSERT INTO users(id,email,full_name,created_at,email_verified_at) VALUES(?,?,?,?,?)').bind(id,email,row.full_name,now,now).run();
-   await env.DB.prepare('INSERT INTO demo_wallets(user_id,usd_balance,inr_balance,updated_at) VALUES(?,10000,0,?)').bind(id,now).run();
+   await env.DB.prepare('INSERT INTO demo_wallets(user_id,usd_balance,inr_balance,updated_at) VALUES(?,500,0,?)').bind(id,now).run();
    user={id,email,full_name:row.full_name,created_at:now};
   }else if(!user)return json({error:'Account not found.'},404);
   await env.DB.prepare('DELETE FROM email_otps WHERE email=? AND purpose=?').bind(email,purpose).run();
