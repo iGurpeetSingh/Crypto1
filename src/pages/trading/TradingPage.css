@@ -126,3 +126,38 @@
  .terminal-order-heading>b{width:100%}
  .terminal-history-tabs{gap:14px}
 }
+
+
+/* Mobile: chart is an edge-to-edge screen, not a card */
+@media (max-width:700px){
+ .binance-terminal .terminal-center{display:contents}
+ .binance-terminal .terminal-chart-panel{
+   grid-column:1/-1;
+   width:100vw;
+   max-width:100vw;
+   margin-left:calc(50% - 50vw);
+   margin-right:calc(50% - 50vw);
+   padding:0!important;
+   border:0!important;
+   border-radius:0!important;
+   box-shadow:none!important;
+   background:#131722!important;
+   overflow:visible!important;
+ }
+ .binance-terminal .terminal-chart-panel .terminal-chart-title{display:none!important}
+ .binance-terminal .terminal-chart-panel .trading-chart-toolbar{display:none!important}
+ .binance-terminal .terminal-chart-panel .tradingview-chart-shell{width:100%;padding:0!important;margin:0!important}
+ .binance-terminal .terminal-chart-panel .tradingview-frame-wrap{
+   width:100vw!important;
+   max-width:100vw!important;
+   height: min(72svh,680px)!important;
+   min-height:480px!important;
+   border-radius:0!important;
+   overflow:hidden!important;
+ }
+ .binance-terminal .terminal-chart-panel .tradingview-frame{
+   width:100%!important;height:100%!important;border:0!important;display:block!important
+ }
+ .binance-terminal .terminal-chart-panel .chart-footnote{display:none!important}
+ .binance-terminal .terminal-chart-panel .trading-chart-error{margin:10px}
+}
