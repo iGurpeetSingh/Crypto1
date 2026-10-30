@@ -72,20 +72,23 @@ export function AppProvider({ children }) {
     return { totalValue: totalValue + cash, investedValue:totalValue, totalBase, totalPl:totalValue-totalBase, assets };
   },[holdings,markets,cash]);
 
-  const trade = useCallback(({side,assetId,quantity}) => {
+  const trade = useCallback(({side,assetId,quantity,stopLoss=0,takeProfit=0}) => {
     const asset = markets.find(m=>m.id===assetId);
     const qty = Number(quantity);
     if (!asset || !Number.isFinite(qty) || qty <= 0) throw new Error('Select a valid asset and quantity.');
     const price = asset.price;
     const gross = price * qty;
     const fee = gross * 0.001;
+    const sl=Number(stopLoss)||0, tp=Number(takeProfit)||0;
+    if(side==='buy'&&sl>0&&sl>=price) throw new Error('Stop-loss must be below the current market price for a long position.');
+    if(side==='buy'&&tp>0&&tp<=price) throw new Error('Take-profit must be above the current market price for a long position.');
     if (side === 'buy') {
       const total = gross + fee;
       if (total > cash) throw new Error('Insufficient USD balance. Add demo funds or reduce quantity.');
       setCash(v=>{const n=v-total; persist({cash:n}); return n;});
       setHoldings(prev=>{
         const old=prev.find(h=>h.id===asset.id);
-        const next=old?prev.map(h=>h.id===asset.id?{...h,quantity:h.quantity+qty,avgBuyPrice:((h.quantity*h.avgBuyPrice)+gross)/(h.quantity+qty)}:h):[...prev,{id:asset.id,name:asset.name,symbol:asset.symbol,quantity:qty,avgBuyPrice:price}];
+        const next=old?prev.map(h=>h.id===asset.id?{...h,quantity:h.quantity+qty,avgBuyPrice:((h.quantity*h.avgBuyPrice)+gross)/(h.quantity+qty),stopLoss:sl||h.stopLoss||0,takeProfit:tp||h.takeProfit||0}:h):[...prev,{id:asset.id,name:asset.name,symbol:asset.symbol,quantity:qty,avgBuyPrice:price,stopLoss:sl,takeProfit:tp}];
         persist({holdings:next}); return next;
       });
     } else if (side === 'sell') {
@@ -95,7 +98,7 @@ export function AppProvider({ children }) {
       setCash(v=>{const n=v+proceeds; persist({cash:n}); return n;});
       setHoldings(prev=>{const next=prev.map(h=>h.id===asset.id?{...h,quantity:h.quantity-qty}:h).filter(h=>h.quantity>1e-10);persist({holdings:next});return next;});
     } else throw new Error('Unsupported order type.');
-    const order={id:'ORD-'+Date.now(),type:side.toUpperCase(),assetId:asset.id,symbol:asset.symbol,name:asset.name,quantity:qty,price,total:gross,fee,status:'FILLED',createdAt:new Date().toISOString()};
+    const order={id:'ORD-'+Date.now(),type:side.toUpperCase(),assetId:asset.id,symbol:asset.symbol,name:asset.name,quantity:qty,price,total:gross,fee,stopLoss:sl,takeProfit:tp,status:'FILLED',createdAt:new Date().toISOString()};
     setOrders(prev=>{const next=[order,...prev].slice(0,100);persist({orders:next});return next;});
     setTransactions(prev=>{const next=[{id:'TX-'+Date.now(),type:side.toUpperCase(),description:side.toUpperCase()+' '+qty+' '+asset.symbol,amount:side==='buy'?-gross:gross,createdAt:new Date().toISOString()},...prev].slice(0,100);persist({transactions:next});return next;});
     return order;
