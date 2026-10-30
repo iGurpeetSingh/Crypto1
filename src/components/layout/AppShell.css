@@ -59,3 +59,72 @@
 .trading-order-summary b{color:var(--text-primary);text-align:right}
 @media(max-width:1000px){.trading-terminal-grid{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:520px){.chart-asset-picker label{width:100%;display:grid}.chart-asset-picker select{width:100%}.trading-current-price{font-size:1rem}.trading-order-panel{padding:14px!important}}
+
+
+/* FINAL mobile drawer fix: keep navigation crisp, opaque and above the dim layer */
+@media (max-width: 768px) {
+  .layout { overflow: visible !important; }
+  .sidebar {
+    position: fixed !important;
+    inset: 0 auto 0 0 !important;
+    width: min(300px, 84vw) !important;
+    height: 100dvh !important;
+    z-index: 1002 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    background: #0B1422 !important;
+    opacity: 1 !important;
+    filter: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    transform: translate3d(-105%, 0, 0) !important;
+    visibility: hidden;
+    pointer-events: none;
+    box-shadow: none;
+    transition: transform .2s ease, visibility .2s ease;
+    contain: paint;
+  }
+  .sidebar.sidebar--open {
+    transform: translate3d(0, 0, 0) !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+    box-shadow: 16px 0 36px rgba(0,0,0,.42);
+  }
+  .sidebar-backdrop {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 1001 !important;
+    display: block !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: rgba(0,0,0,.64) !important;
+    opacity: 1 !important;
+    filter: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    touch-action: manipulation;
+    pointer-events: auto;
+  }
+  .sidebar-header, .sidebar-nav, .sidebar-footer,
+  .sidebar .nav-group, .sidebar .nav-item, .sidebar .nav-item * {
+    opacity: 1 !important;
+    filter: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  .sidebar .nav-item {
+    position: relative;
+    z-index: 2;
+    min-height: 48px;
+    color: #D6E1EF !important;
+    background: transparent;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(59,130,246,.2);
+  }
+  .sidebar .nav-item--active {
+    background: linear-gradient(100deg, #1D4ED8, #0E7490) !important;
+    color: #fff !important;
+  }
+  .sidebar-close { z-index: 3; pointer-events: auto; }
+  .main { position: relative; z-index: 1; margin-left: 0 !important; width: 100%; }
+}
