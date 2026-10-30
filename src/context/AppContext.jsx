@@ -78,7 +78,7 @@ export function AppProvider({ children }) {
     const unrealizedPl = assets.reduce((sum,h)=>sum+h.quantity*((markets.find(m=>m.id===h.id)?.price || h.avgBuyPrice)-h.avgBuyPrice),0);
     const realizedPl = orders.reduce((sum,order)=>sum+Number(order.realizedPnl||0),0);
     return { totalValue: totalValue + cash, investedValue:totalValue, totalBase, totalPl:unrealizedPl, unrealizedPl, realizedPl, totalProfitLoss:unrealizedPl+realizedPl, assets };
-  },[holdings,markets,cash]);
+  },[holdings,markets,cash,orders]);
 
   const trade = useCallback(({side,assetId,quantity,stopLoss=0,takeProfit=0,triggerReason='',executionPrice=0}) => {
     const asset = markets.find(m=>m.id===assetId);
