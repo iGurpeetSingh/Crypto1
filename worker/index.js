@@ -1,4 +1,4 @@
-const json=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'no-store'}});
+const json=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'no-store','Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type,Authorization'}});
 const emailValid=e=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
 const randomCode=()=>String(crypto.getRandomValues(new Uint32Array(1))[0]%900000+100000);
 const hex=b=>Array.from(new Uint8Array(b),x=>x.toString(16).padStart(2,'0')).join('');
@@ -56,6 +56,8 @@ async function route(req,env){
   const name=String((await body(req)).fullName||'').trim();if(name.length<2||name.length>80)return json({error:'Name must be 2–80 characters.'},400);
   await env.DB.prepare('UPDATE users SET full_name=? WHERE id=?').bind(name,user.id).run();return json({success:true,profile:{id:user.id,email:user.email,name,createdAt:user.created_at,balanceInr:0}});
  }
+ if(path==='/api/payments/create-order'&&method==='POST')return json({error:'Real payments are disabled: no payment gateway or merchant credentials are configured. Use the simulated demo wallet.'},501);
+ if(path==='/api/payments/verify'&&method==='POST')return json({error:'Payment verification is unavailable until a payment provider is configured.'},501);
  if(path==='/api/auth/logout'&&method==='POST'){
   const token=userFromToken(req);if(token)await env.DB.prepare('DELETE FROM sessions WHERE token_hash=?').bind(await digest(token)).run();return json({success:true});
  }
