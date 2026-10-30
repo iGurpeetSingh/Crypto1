@@ -53,3 +53,38 @@ The Wallet page creates INR Razorpay orders server-side and credits the account 
 ### 4. Trading mode
 
 Spot market orders and limit orders currently operate against the local simulated trading ledger. Pending limit orders and stop-loss/take-profit checks are evaluated while the browser app is open and market quotes refresh. This is not a production exchange matching engine, does not guarantee execution at a target price, and must not be used to custody or trade real crypto assets.
+
+ 
+## Cloudflare Workers backend (no paid external API required for demo mode)
+
+The backend source is in `worker/index.js`; D1 schema migration is in `migrations/0001_initial.sql`. It provides health, email-OTP development flow, profile, demo wallet, demo trading orders, positions, and trade history endpoints.
+
+### What works without external API credentials
+
+- Cloudflare Worker API runtime and D1 persistence.
+- Local-only development OTP flow (the code is returned by the API response for testing).
+- User registration/login and expiring bearer sessions in D1.
+- Demo USD wallet, crypto positions, simulated buy/sell orders and history.
+- Profile read/update and session logout.
+- No exchange, mail, payment gateway, or market-data provider is called by this backend.
+
+**Security restriction:** Development OTP mode is disabled in `wrangler.toml` for production. Never enable `ALLOW_DEV_OTP` or expose development OTP responses on a public production URL. A real email OTP cannot be delivered without an email delivery service. A real payment cannot be collected without a payment provider. A real exchange order cannot be executed without an exchange integration and credentials. Demo balances are not money and simulated orders are not real trades.
+
+### Run locally
+
+1. Install Node.js (20.19+ or 22.12+) and dependencies: `npm install`.
+2. Sign in to Cloudflare from your terminal: `npx wrangler login`.
+3. Create the D1 database: `npm run db:create`.
+4. Copy the returned database ID into `wrangler.toml`, replacing `REPLACE_WITH_CLOUDFLARE_D1_DATABASE_ID`.
+5. Apply the schema: `npm run db:migrate:remote`.
+6. Create a local-only `.dev.vars` file containing:
+   `ENVIRONMENT=development`
+   `ALLOW_DEV_OTP=true`
+   `SESSION_SECRET=use-a-long-random-local-development-secret`
+7. Start the Worker: `npm run worker:dev`.
+
+Do not commit `.dev.vars`. It is excluded by `.gitignore`.
+
+### Deploy
+
+Set a strong `SESSION_SECRET` with Wrangler secrets, keep `ENVIRONMENT=production` and `ALLOW_DEV_OTP=false`, then run `npm run worker:deploy`. Set a custom Worker domain or use the assigned `workers.dev` URL. The current Vercel frontend still needs its `/api/*` requests routed to that deployed Worker URL before it uses this backend in production.
