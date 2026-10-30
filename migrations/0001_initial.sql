@@ -39,3 +39,12 @@ CREATE TABLE IF NOT EXISTS demo_trades (
  fee REAL NOT NULL DEFAULT 0,
  created_at INTEGER NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS demo_positions (
+ user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+ symbol TEXT NOT NULL,
+ quantity REAL NOT NULL DEFAULT 0 CHECK(quantity>=0),
+ avg_price REAL NOT NULL DEFAULT 0 CHECK(avg_price>=0),
+ PRIMARY KEY(user_id,symbol)
+);
+CREATE INDEX IF NOT EXISTS demo_trades_user_created_idx ON demo_trades(user_id,created_at DESC);
