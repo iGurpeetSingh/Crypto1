@@ -36,7 +36,7 @@ export default function WalletPage(){
   if(!Number.isInteger(amountValue)||amountValue<100||amountValue>500000){setPaymentError('Enter a whole amount between ₹100 and ₹5,00,000.');return;}
   setPaymentBusy(true);
   try{
-   const response=await fetch(apiUrl('/api/payments/create-order',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({amountInr:amountValue})});
+   const response=await fetch(apiUrl('/api/payments/create-order'),{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({amountInr:amountValue})});
    const order=await response.json().catch(()=>({}));
    if(!response.ok)throw new Error(order.error||'Payment order creation failed.');
    await loadRazorpay();
@@ -47,7 +47,7 @@ export default function WalletPage(){
     theme:{color:'#2563EB'},
     handler:async payment=>{
      try{
-      const verified=await fetch(apiUrl('/api/payments/verify',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify(payment)});
+      const verified=await fetch(apiUrl('/api/payments/verify'),{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify(payment)});
       const result=await verified.json().catch(()=>({}));
       if(!verified.ok)throw new Error(result.error||'Payment verification failed.');
       await refreshRealWallet();
