@@ -56,3 +56,6 @@ alter table public.profiles enable row level security;
 alter table public.auth_otps enable row level security;
 alter table public.payment_orders enable row level security;
 -- Do not add public policies. Server routes use the Supabase service-role key only.
+
+REVOKE ALL ON FUNCTION public.credit_crypto1_wallet(uuid, uuid, numeric) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.credit_crypto1_wallet(uuid, uuid, numeric) TO service_role;
