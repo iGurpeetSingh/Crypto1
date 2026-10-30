@@ -17,15 +17,20 @@ function readSaved() {
 function save(data) {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (e) { console.warn('Could not save demo account', e); }
 }
-const initial = readSaved() || {
-  cash: 10000, funding: 5000, holdings: [], orders: [], transactions: [],
+const savedState = readSaved();
+const initial = savedState ? {
+  ...savedState,
+  cash: savedState.orders?.length || savedState.holdings?.length || savedState.transactions?.length ? savedState.cash : 500,
+  funding: savedState.orders?.length || savedState.holdings?.length || savedState.transactions?.length ? (savedState.funding ?? 0) : 0
+} : {
+  cash: 500, funding: 0, holdings: [], orders: [], transactions: [],
   settings: { theme: 'pink-glass', accent: '#FF5CA8', currency: 'USD', locale: 'en-US', tableDensity: 'normal' }
 };
 
 export function AppProvider({ children }) {
   const [markets,setMarkets] = useState(SEED_MARKETS);
-  const [cash,setCash] = useState(initial.cash ?? 10000);
-  const [funding,setFunding] = useState(initial.funding ?? 5000);
+  const [cash,setCash] = useState(initial.cash ?? 500);
+  const [funding,setFunding] = useState(initial.funding ?? 0);
   const [holdings,setHoldings] = useState(initial.holdings || []);
   const [orders,setOrders] = useState(initial.orders || []);
   const [pendingOrders,setPendingOrders] = useState(initial.pendingOrders || []);
