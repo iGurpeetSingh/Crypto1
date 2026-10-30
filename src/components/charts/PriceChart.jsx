@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import './Chart.css';
 
-const ranges = [{label:'1H',count:12},{label:'24H',count:24},{label:'7D',count:36},{label:'ALL',count:60}];
+const ranges = [{label:'1H',count:12},{label:'24H',count:288},{label:'7D',count:2016},{label:'ALL',count:2016}];
 export default function PriceChart({data=[],title='BTC/USDT',height=360}){
  const [range,setRange]=useState('7D');
  const selected=ranges.find(r=>r.label===range)||ranges[2];
