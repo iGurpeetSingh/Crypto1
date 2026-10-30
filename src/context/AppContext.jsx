@@ -63,6 +63,7 @@ export function AppProvider({ children }) {
   }, []);
 
   useEffect(() => { refresh(); const timer = setInterval(refresh, 60000); return () => clearInterval(timer); }, [refresh]);
+  useEffect(() => { save({ cash, funding, holdings, orders, transactions, settings }); }, [cash, funding, holdings, orders, transactions, settings]);
 
   const portfolio = useMemo(() => {
     const assets = holdings.map(h => ({...h}));
