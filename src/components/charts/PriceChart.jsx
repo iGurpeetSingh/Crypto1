@@ -13,6 +13,7 @@ export default function PriceChart({ symbol = 'BTC', title = 'BTC/USDT', height 
   const [status, setStatus] = useState('Loading TradingView market chart…');
   const [failed, setFailed] = useState(false);
   const tvSymbol = toTradingViewSymbol(symbol || title);
+  const chartHeight = Math.max(460, Number(height) || 520);
 
   useEffect(() => {
     const host = hostRef.current;
@@ -26,7 +27,7 @@ export default function PriceChart({ symbol = 'BTC', title = 'BTC/USDT', height 
     widget.id = widgetId;
     widget.className = 'tradingview-widget-container__widget';
     widget.style.width = '100%';
-    widget.style.height = '100%';
+    widget.style.height = chartHeight + 'px';
 
     const copyright = document.createElement('div');
     copyright.className = 'tradingview-widget-copyright';
@@ -42,7 +43,9 @@ export default function PriceChart({ symbol = 'BTC', title = 'BTC/USDT', height 
     script.type = 'text/javascript';
     script.async = true;
     script.text = JSON.stringify({
-      autosize: true,
+      autosize: false,
+      width: '100%',
+      height: chartHeight,
       symbol: tvSymbol,
       interval: '15',
       timezone: 'Asia/Kolkata',
@@ -71,7 +74,7 @@ export default function PriceChart({ symbol = 'BTC', title = 'BTC/USDT', height 
       script.onerror = null;
       host.replaceChildren();
     };
-  }, [tvSymbol, widgetId]);
+  }, [tvSymbol, widgetId, chartHeight]);
 
   return (
     <section className="trading-chart tradingview-chart-shell">
@@ -87,7 +90,7 @@ export default function PriceChart({ symbol = 'BTC', title = 'BTC/USDT', height 
       <div
         className="tradingview-widget-container"
         ref={hostRef}
-        style={{ width: '100%', height: Math.max(340, Number(height) || 460), minHeight: 340 }}
+        style={{ width: '100%', height: chartHeight + 28, minHeight: chartHeight + 28 }}
         aria-label={tvSymbol + ' interactive candlestick trading chart'}
       />
       {failed && (
