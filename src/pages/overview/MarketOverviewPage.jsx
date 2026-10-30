@@ -42,7 +42,7 @@ export default function MarketOverviewPage() {
             <h3>Market Cap Evolution</h3>
             <button className="btn btn--ghost btn--small" onClick={() => refresh()}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12a8 8 0 0 0-8-8 8 8 0 0 0-4.7 1.6L3 13v5h5"/></svg>Refresh</button>
           </div>
-          <PriceChart data={chartData} title="Market" height={240} />
+          <PriceChart data={chartData} title="BTC" symbol="BTC" height={240} />
         </GlassCard>
 
         <GlassCard className="card-chart">
