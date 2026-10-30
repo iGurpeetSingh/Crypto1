@@ -55,3 +55,17 @@
   color: var(--text-secondary);
   text-align: center;
 }
+
+
+.trading-chart{width:100%;min-width:0;color:var(--text-primary)}
+.trading-chart-toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:4px 0 14px}
+.trading-chart-toolbar strong{font-size:1rem;letter-spacing:.02em}
+.chart-live-dot{font-size:.72rem;color:var(--success);margin-left:12px}
+.chart-range-tabs{display:flex;gap:4px;background:rgba(255,255,255,.045);padding:4px;border:1px solid var(--glass-border);border-radius:8px}
+.chart-range-tabs button{border:0;background:transparent;color:var(--text-secondary);padding:6px 10px;border-radius:6px;font-size:.75rem;cursor:pointer}
+.chart-range-tabs button.active{background:var(--surface-hover);color:var(--text-primary)}
+.trading-chart-canvas{width:100%;overflow:hidden}
+.trading-chart-canvas svg{width:100%;height:auto;display:block;min-height:220px}
+.chart-footnote{font-size:.7rem;color:var(--text-secondary);padding-top:8px}
+.trading-chart-empty{min-height:260px;display:grid;place-items:center;color:var(--text-secondary);background:var(--surface);border-radius:12px}
+@media(max-width:600px){.trading-chart-toolbar{align-items:flex-start}.chart-range-tabs{width:100%;justify-content:space-between}.chart-range-tabs button{flex:1;padding:7px 4px}.trading-chart-canvas svg{min-height:210px}}
