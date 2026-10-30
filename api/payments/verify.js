@@ -12,7 +12,7 @@ export default async function handler(req,res){
   const rows=await db('payment_orders?provider_order_id=eq.'+encodeURIComponent(razorpay_order_id)+'&user_id=eq.'+encodeURIComponent(user.sub)+'&select=id,status,amount_inr&limit=1');
   const order=rows[0];
   if(!order){json(res,404,{error:'Payment order not found for this account.'});return;}
-  if(order.status==='captured'){json(res,200,{success:true,message:'Payment was already verified.'});return;}
+  if(order.status==='credited'){json(res,200,{success:true,message:'Payment was already verified and credited.'});return;}
   const expected=createHmac('sha256',process.env.RAZORPAY_KEY_SECRET).update(razorpay_order_id+'|'+razorpay_payment_id).digest('hex');
   const a=Buffer.from(expected),b=Buffer.from(String(razorpay_signature));
   if(a.length!==b.length||!timingSafeEqual(a,b)){json(res,400,{error:'Payment signature verification failed.'});return;}
