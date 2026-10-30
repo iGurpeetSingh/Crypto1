@@ -1,0 +1,147 @@
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import API from '../../services/localBackend';
+import { GlassCard } from '../../components/common/GlassCard';
+import MetricCard from '../../components/cards/MetricCard';
+import { useApp } from '../../context/AppContext';
+
+export default function PortfolioPage() {
+  const { portfolio, markets, refresh, loading } = useApp();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    async function load() {
+      try {
+        await API.getHoldings();
+        await API.getMarkets();
+      } catch (e) { console.error(e); }
+    }
+    load();
+  }, []);
+
+  if (loading) return <div className="page-content"><GlassCard><div className="skeleton-grid" /></GlassCard></div>;
+
+  const holdings = portfolio.assets || [];
+  const totalValue = portfolio.totalValue || 0;
+  const totalPl = portfolio.totalPl || 0;
+  const totalBase = portfolio.totalBase || 0;
+  const plPercent = totalBase > 0 ? (totalPl / totalBase) * 100 : 0;
+
+  const topHoldings = holdings.slice(0, 8).map((h) => {
+    const asset = markets.find((m) => m.id === h.id);
+    const hValue = (h.quantity || 0) * (asset?.price || 0);
+    const hPl = hValue - (h.quantity || 0) * (h.avgBuyPrice || 0);
+    const qty = h.quantity.toFixed(4);
+    const valueStr = `$${hValue.toLocaleString()}`;
+    const plStr = (hPl >= 0 ? '+' : '') + hPl.toFixed(2);
+    const plPct = (h.quantity * (h.avgBuyPrice || 1)) > 0 ? ((hPl / (h.quantity * (h.avgBuyPrice || 1))) * 100) : 0;
+    const pctStr = plPct >= 0 ? '+' : '' + plPct.toFixed(1);
+    return {
+      key: h.id,
+      name: asset?.name || h.id,
+      symbol: asset?.symbol || '',
+      qty,
+      value: valueStr,
+      pl: hPl,
+      plStr,
+      pct: pctStr,
+      plClass: hPl >= 0 ? 'success' : 'danger'
+    };
+  });
+
+  return (
+    <div className="page-content">
+      <GlassCard className="page-header">
+        <h1>Portfolio</h1>
+        <p className="page-subtitle">Your simulated cryptocurrency portfolio with real-time local market pricing</p>
+      </GlassCard>
+
+      <div className="grid grid-4">
+        <MetricCard
+          label="Total Value"
+          value={`$${totalValue.toLocaleString()}`}
+          subtitle={`Cost Basis: $${totalBase.toLocaleString()}`}
+          trend={totalPl}
+          trendLabel="PnL"
+          icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>}
+          accent="#42DDAA"
+          loading={loading}
+        />
+        <MetricCard
+          label="Total PnL"
+          value={`${plPercent >= 0 ? '+' : ''}${plPercent.toFixed(2)}%`}
+          subtitle={`$${totalPl.toFixed(2)} ($${totalBase.toFixed(2)} basis)`}
+          icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z"/></svg>}
+          accent={plPercent >= 0 ? '#42DDAA' : '#FF657A'}
+          loading={loading}
+        />
+        <MetricCard
+          label="Holdings"
+          value={holdings.length}
+          subtitle={`${holdings.length} ${holdings.length === 1 ? 'asset' : 'assets'} held`}
+          icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>}
+          accent="#C084FC"
+          loading={loading}
+        />
+        <MetricCard
+          label="Ready Cash"
+          value={`$${totalValue.toLocaleString()}`}
+          subtitle="Available for trading"
+          icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/></svg>}
+          accent="#FF5CA8"
+          loading={loading}
+        />
+      </div>
+
+      <div className="grid grid-2" style={{ marginTop: '20px' }}>
+        <GlassCard className="card-chart">
+          <div className="card-chart-header">
+            <h3>Top Holdings</h3>
+          </div>
+          {holdings.slice(0, 8).map((h) => {
+            const asset = markets.find((m) => m.id === h.id);
+            const hValue = (h.quantity || 0) * (asset?.price || 0);
+            const hPl = hValue - (h.quantity || 0) * (h.avgBuyPrice || 0);
+            return (
+              <div key={h.id} className="table-row">
+                <div className="table-cell">{asset?.name || h.id} ({asset?.symbol || ''})</div>
+                <div className="table-cell">{h.quantity.toFixed(4)}</div>
+                <div className="table-cell">${hValue.toLocaleString()}</div>
+                <div className={`table-cell text-${hPl >= 0 ? 'success' : 'danger'}`}>
+                  {hPl >= 0 ? '+' : ''}{hPl.toFixed(2)} (${hPl / (h.quantity * (h.avgBuyPrice || 1)) * 100 >= 0 ? '+' : ''}{(hPl / (h.quantity * (h.avgBuyPrice || 1)) * 100).toFixed(1)}%)
+                </div>
+              </div>
+            );
+          })}
+          {holdings.length === 0 && (
+            <div className="table-empty"><p>No holdings yet. Start trading!</p></div>
+          )}
+        </div>
+
+        <GlassCard className="card-chart">
+          <div className="card-chart-header">
+            <h3>Quick Actions</h3>
+          </div>
+          <div className="quick-actions">
+            <button className="quick-action" onClick={() => navigate('/portfolio/holdings')}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 20, height: 20 }}><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+              Holdings
+            </button>
+            <button className="quick-action" onClick={() => navigate('/portfolio/performance')}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 20, height: 20 }}><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+              Performance
+            </button>
+            <button className="quick-action" onClick={() => navigate('/trading')}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 20, height: 20 }}><path d="M12 2L2 7l10 5 10-5-10-5z"/></svg>
+              Trade
+            </button>
+            <button className="quick-action" onClick={() => navigate('/wallet')}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 20, height: 20 }}><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/></svg>
+              Wallet
+            </button>
+          </div>
+        </GlassCard>
+      </div>
+    </div>
+  );
+}

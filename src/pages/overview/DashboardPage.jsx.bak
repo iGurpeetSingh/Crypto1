@@ -1,0 +1,239 @@
+import { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import API from '../../services/localBackend';
+import { GlassCard } from '../../components/common/GlassCard';
+import MetricCard from '../../components/cards/MetricCard';
+import PriceChart from '../../components/charts/PriceChart';
+import { useApp } from '../../context/AppContext';
+
+export default function DashboardPage() {
+  const { markets, portfolio, watchlist, refresh, loading } = useApp();
+  const navigate = useNavigate();
+  const [priceHistory, setPriceHistory] = useState([]);
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const [m, p] = await Promise.all([API.getMarkets(), API.getPortfolio()]);
+        const btc = m.find((a) => a.symbol === 'BTC');
+
+      <div className="grid grid-4">
+        <MetricCard
+          label="Portfolio Value"
+          value={`$${portfolio.totalValue.toLocaleString()}`}
+          subtitle={`Base: $${portfolio.totalBase.toLocaleString()}`}
+          trend={portfolio.totalPl}
+          trendLabel="PnL"
+          icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>}
+          accent="#42DDAA"
+          loading={loading}
+
+      <div className="grid grid-2" style={{ marginTop: '20px' }}>
+        <GlassCard className="card-chart">
+          <div className="card-chart-header">
+            <h3>BTC Price History</h3>
+            <button className="btn btn--ghost btn--small" onClick={() => refresh()}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12a8 8 0 0 0-8-8 8 8 0 0 0-4.7 1.6L3 13v5h5"/></svg>
+              Refresh
+            </button>
+          </div>
+          <PriceChart data={priceHistory} title="BTC" height={200} />
+        </GlassCard>
+
+        <GlassCard className="card-chart">
+          <div className="card-chart-header">
+            <h3>Top Gainers</h3>
+          </div>
+          <div className="table-wrapper">
+            <div className="table">
+              <div className="table-header">
+                <div className="table-cell table-header-cell">Asset</div>
+                <div className="table-cell table-header-cell sortable">Price</div>
+                <div className="table-cell table-header-cell sortable">24h Change</div>
+              </div>
+              {topGainers.map((a, i) => (
+
+      <div className="grid grid-2" style={{ marginTop: '20px' }}>
+        <GlassCard className="card-chart">
+          <div className="card-chart-header">
+            <h3>Trending</h3>
+          </div>
+          <div className="table-wrapper">
+            <div className="table">
+              <div className="table-header">
+                <div className="table-cell table-header-cell">Asset</div>
+                <div className="table-cell table-header-cell sortable">Price</div>
+                <div className="table-cell table-header-cell sortable">24h Change</div>
+              </div>
+              {trending.map((a) => (
+                <div key={a.id} className="table-row">
+                  <div className="table-cell">
+                    <div className="asset-cell">
+                      <span className="asset-icon">{a.symbol.charAt(0)}</span>
+                      <span>{a.name} ({a.symbol})</span>
+                    </div>
+                  </div>
+                  <div className="table-cell">${a.price.toLocaleString(undefined, { minimumFractionDigits: 4, maximumFractionDigits: 4 })}</div>
+                  <div className={`table-cell text-${a.change24 >= 0 ? 'success' : 'danger'}`}>{a.change24 >= 0 ? '+' : ''}{a.change24.toFixed(2)}%</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </GlassCard>
+
+        <GlassCard className="card-chart">
+          <div className="card-chart-header">
+            <h3>Quick Actions</h3>
+          </div>
+          <div className="quick-actions">
+            <button className="quick-action" onClick={() => navigate('/trading/spot')}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 20, height: 20 }}><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/></svg>
+              Trade
+            </button>
+            <button className="quick-action" onClick={() => navigate('/portfolio')}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 20, height: 20 }}><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+              Portfolio
+            </button>
+            <button className="quick-action" onClick={() => navigate('/wallet')}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 20, height: 20 }}><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/></svg>
+              Wallet
+            </button>
+            <button className="quick-action" onClick={() => navigate('/markets')}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 20, height: 20 }}><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 0 0 1.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 0 0-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 0 0-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 0 0-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 0 0-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 0 0 1.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/></svg>
+              Markets
+            </button>
+          </div>
+        </GlassCard>
+      </div>
+    </div>
+  );
+}
+
+                <div key={a.id} className={`table-row ${i < 3 ? 'table-row--clickable' : ''}`}>
+                  <div className="table-cell">
+                    <div className="asset-cell">
+                      <span className="asset-icon">{a.symbol.charAt(0)}</span>
+                      <span>{a.name} ({a.symbol})</span>
+                    </div>
+                  </div>
+                  <div className="table-cell">${a.price.toLocaleString(undefined, { minimumFractionDigits: 4, maximumFractionDigits: 4 })}</div>
+                  <div className={`table-cell text-${a.change24 >= 0 ? 'success' : 'danger'}`}>{a.change24 >= 0 ? '+' : ''}{a.change24.toFixed(2)}%</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </GlassCard>
+      </div>
+
+      <div className="grid grid-2" style={{ marginTop: '20px' }}>
+        <GlassCard className="card-chart">
+          <div className="card-chart-header">
+            <h3>Top Losers</h3>
+          </div>
+          <div className="table-wrapper">
+            <div className="table">
+              <div className="table-header">
+                <div className="table-cell table-header-cell">Asset</div>
+                <div className="table-cell table-header-cell sortable">Price</div>
+                <div className="table-cell table-header-cell sortable">24h Change</div>
+              </div>
+              {topLosers.map((a, i) => (
+                <div key={a.id} className={`table-row ${i < 3 ? 'table-row--clickable' : ''}`}>
+                  <div className="table-cell">
+                    <div className="asset-cell">
+                      <span className="asset-icon">{a.symbol.charAt(0)}</span>
+                      <span>{a.name} ({a.symbol})</span>
+                    </div>
+                  </div>
+                  <div className="table-cell">${a.price.toLocaleString(undefined, { minimumFractionDigits: 4, maximumFractionDigits: 4 })}</div>
+                  <div className={`table-cell text-${a.change24 >= 0 ? 'success' : 'danger'}`}>{a.change24 >= 0 ? '+' : ''}{a.change24.toFixed(2)}%</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </GlassCard>
+
+        <GlassCard className="card-chart">
+          <div className="card-chart-header">
+            <h3>Watchlist</h3>
+          </div>
+          {watchlistIds.length === 0 ? (
+            <div className="table-empty"><p>No watchlist assets yet</p></div>
+          ) : (
+            <div className="table-wrapper">
+              <div className="table">
+                <div className="table-header">
+                  <div className="table-cell table-header-cell">Asset</div>
+                  <div className="table-cell table-header-cell">Price</div>
+                  <div className="table-cell table-header-cell">24h Change</div>
+                </div>
+                {markets.filter(a => watchlistIds.includes(a.id)).map((a) => (
+                  <div key={a.id} className="table-row">
+                    <div className="table-cell">
+                      <div className="asset-cell">
+                        <span className="asset-icon">{a.symbol.charAt(0)}</span>
+                        <span>{a.name} ({a.symbol})</span>
+                      </div>
+                    </div>
+                    <div className="table-cell">${a.price.toLocaleString(undefined, { minimumFractionDigits: 4, maximumFractionDigits: 4 })}</div>
+                    <div className={`table-cell text-${a.change24 >= 0 ? 'success' : 'danger'}`}>{a.change24 >= 0 ? '+' : ''}{a.change24.toFixed(2)}%</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </GlassCard>
+      </div>
+
+        />
+        <MetricCard
+          label="Total Market Cap"
+          value={`$${(portfolio.totalValue * 1000000000).toLocaleString()}`}
+          subtitle={`Simulated across ${markets.filter(Boolean).length} tracked assets`}
+          icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="2" x2="12" y2="22"/><path d="M12 6v12"/><path d="M6 12h12"/></svg>}
+          accent="#C084FC"
+          loading={loading}
+        />
+        <MetricCard
+          label="24h Volume"
+          value={`$${(portfolio.totalValue * 0.03).toLocaleString()}`}
+          subtitle="Simulated 24h trading volume"
+          icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>}
+          accent="#FF5CA8"
+          loading={loading}
+        />
+        <MetricCard
+          label="BTC / ETH"
+          value={`$${(priceHistory.length > 0 ? priceHistory[priceHistory.length-1].price : 0).toLocaleString(undefined, { minimumFractionDigits: 4, maximumFractionDigits: 4 })}`}
+          subtitle={`BTC ${markets.find(a=>a.symbol==='BTC')?.price || 0 ? `$${(markets.find(a=>a.symbol==='BTC')!.price||0).toLocaleString(undefined, { minimumFractionDigits: 4, maximumFractionDigits: 4 })}` : '—'}`}
+          icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>}
+          loading={loading}
+        />
+      </div>
+
+        const eth = m.find((a) => a.symbol === 'ETH');
+        const pts = btc?.history?.slice(-30) || [];
+        const btcPrice = pts.length > 0 ? pts[pts.length - 1].price : 0;
+        setPriceHistory(pts);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    loadData();
+  }, []);
+
+  const watchlistIds = watchlist.map((w) => w.assetId);
+  const topGainers = useMemo(() => [...markets].filter(Boolean).sort((a, b) => b.change24 - a.change24).slice(0, 5), [markets]);
+  const topLosers = useMemo(() => [...markets].filter(Boolean).sort((a, b) => a.change24 - b.change24).slice(0, 5), [markets]);
+  const trending = useMemo(() => [...markets].filter(Boolean).sort((a, b) => Math.abs(b.change24) - Math.abs(a.change24)).slice(0, 5), [markets]);
+
+  if (loading) {
+    return <div className="page-content"><GlassCard><div className="skeleton-grid" /></GlassCard></div>;
+  }
+
+  return (
+    <div className="page-content">
+      <GlassCard className="page-header">
+        <h1>Dashboard</h1>
+        <p className="page-subtitle">Real-time overview of simulated crypto market data</p>
+      </GlassCard>

@@ -1,0 +1,23 @@
+:root {
+  --background: #100B18;
+  --background-secondary: #191021;
+  --surface: rgba(255, 255, 255, 0.055);
+  --surface-hover: rgba(255, 255, 255, 0.10);
+  --glass-border: rgba(255, 255, 255, 0.13);
+  --gradient-primary: linear-gradient(135deg, #FF5CA8 0%, #C084FC 50%, #FF9ECF 100%);
+  --gradient-glow: radial-gradient(ellipse 60% 60% at 50% 0%, rgba(255, 92, 168, 0.15) 0%, transparent 70%);
+  --primary: #FF5CA8;
+  --primary-hover: #FF7DB9;
+  --secondary: #C084FC;
+  --accent: #FF9ECF;
+  --text-primary: #FFF7FC;
+  --text-secondary: #B8AABD;
+  --success: #42DDAA;
+  --danger: #FF657A;
+  --warning: #FFC56E;
+  --radius: 16px;
+  --radius-sm: 10px;
+  --sidebar-width: 260px;
+  --topbar-height: 64px;
+  --transition: 0.2s ease;
+}

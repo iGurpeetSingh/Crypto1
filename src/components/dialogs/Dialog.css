@@ -1,0 +1,91 @@
+.dialog-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease;
+}
+
+.dialog {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  backdrop-filter: blur(24px);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4);
+  max-width: 500px;
+  width: calc(100vw - 48px);
+  max-height: calc(100vh - 48px);
+  display: flex;
+  flex-direction: column;
+  animation: slideIn 0.25s ease;
+}
+
+.dialog--small {
+  max-width: 400px;
+}
+
+.dialog--large {
+  max-width: 800px;
+}
+
+.dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.dialog-header h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.dialog-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background var(--transition);
+}
+
+.dialog-close:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+.dialog-body {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--glass-border);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
