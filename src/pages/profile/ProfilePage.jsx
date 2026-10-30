@@ -8,7 +8,7 @@ import './ProfilePage.css';
 
 const money=value=>Number(value||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
 export default function ProfilePage(){
- const {cash,holdings,orders,pendingOrders}=useApp();
+ const {cash,holdings,orders,pendingOrders,portfolio}=useApp();
  const [profile,setProfile]=useState(()=>getStoredProfile());
  const [loading,setLoading]=useState(false);
  useEffect(()=>{
@@ -31,12 +31,17 @@ export default function ProfilePage(){
   <section className="crypto-profile-identity">
    <div className="crypto-profile-avatar">{String(name).trim().charAt(0).toUpperCase()||'D'}</div>
    <div className="crypto-profile-id"><h2>{name}</h2><p>{email}</p><span>● Demo trading account</span></div>
-   <Link className="btn btn--ghost" to="/account">Edit profile</Link>
+   <span className="crypto-profile-verified">Verified email</span>
   </section>
   <div className="grid grid-3 crypto-profile-stats">
    <GlassCard><span>Available demo balance</span><strong>$ {money(cash)}</strong><small>USD available to place orders</small></GlassCard>
    <GlassCard><span>Total filled trades</span><strong>{filled.length}</strong><small>Completed demo buy and sell orders</small></GlassCard>
    <GlassCard><span>Open positions</span><strong>{positions.length}</strong><small>Crypto assets currently held</small></GlassCard>
+  </div>
+  <div className="grid grid-3 crypto-profile-stats crypto-profile-pnl">
+   <GlassCard><span>Unrealized Profit / Loss</span><strong className={Number(portfolio.unrealizedPl||0)>=0?'positive':'negative'}>{Number(portfolio.unrealizedPl||0)>=0?'+':'−'}$ {money(Math.abs(portfolio.unrealizedPl||0))}</strong><small>Based on current market price</small></GlassCard>
+   <GlassCard><span>Realized Profit / Loss</span><strong className={Number(portfolio.realizedPl||0)>=0?'positive':'negative'}>{Number(portfolio.realizedPl||0)>=0?'+':'−'}$ {money(Math.abs(portfolio.realizedPl||0))}</strong><small>Completed sell orders</small></GlassCard>
+   <GlassCard><span>Total Profit / Loss</span><strong className={Number(portfolio.totalProfitLoss||0)>=0?'positive':'negative'}>{Number(portfolio.totalProfitLoss||0)>=0?'+':'−'}$ {money(Math.abs(portfolio.totalProfitLoss||0))}</strong><small>Realized + unrealized P/L</small></GlassCard>
   </div>
   <GlassCard className="crypto-profile-portfolio">
    <div className="crypto-profile-section-head"><div><h3>Demo portfolio</h3><p>Current simulated holdings</p></div><Link to="/trading">Go to trading →</Link></div>
@@ -44,7 +49,7 @@ export default function ProfilePage(){
   </GlassCard>
   <GlassCard className="crypto-profile-portfolio">
    <div className="crypto-profile-section-head"><div><h3>Recent trading activity</h3><p>Your demo orders only</p></div><Link to="/trading">Trade crypto →</Link></div>
-   {filled.length?<div className="crypto-profile-table"><div className="crypto-profile-row crypto-profile-table-head"><span>Market</span><span>Side</span><span>Order value</span></div>{filled.slice(0,8).map(order=><div className="crypto-profile-row" key={order.id}><b>{order.symbol}/USDT</b><span className={order.type==='BUY'?'positive':'negative'}>{order.type}</span><span>$ {money(order.total||order.price*order.quantity)}</span></div>)}</div>:<div className="crypto-profile-empty">No demo trades placed yet. Your completed buy and sell orders will show here.</div>}
+   {filled.length?<div className="crypto-profile-table"><div className="crypto-profile-row crypto-profile-table-head"><span>Market</span><span>Side</span><span>Order value</span></div>{filled.slice(0,8).map(order=><div className="crypto-profile-row" key={order.id}><b>{order.symbol}/USDT</b><span className={order.type==='BUY'?'positive':'negative'}>{order.type}</span><span className={Number(order.realizedPnl||0)>=0?'positive':'negative'}>$ {money(order.total||order.price*order.quantity)} · P/L {Number(order.realizedPnl||0)>=0?'+':'−'}${money(Math.abs(order.realizedPnl||0))}</span></div>)}</div>:<div className="crypto-profile-empty">No demo trades placed yet. Your completed buy and sell orders will show here.</div>}
    {pendingOrders.filter(order=>order.status==='OPEN').length>0&&<p className="crypto-profile-pending">{pendingOrders.filter(order=>order.status==='OPEN').length} open limit order(s) pending</p>}
   </GlassCard>
   <p className="crypto-profile-note">{loading?'Refreshing account details…':'Demo funds are virtual. Orders do not execute on a real exchange.'}</p>
