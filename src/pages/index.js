@@ -9,3 +9,5 @@ export {default as settingsPage} from './settings/SettingsPage';
 export {default as loginPage} from './auth/LoginPage';
 export {default as registerPage} from './auth/RegisterPage';
 export {default as notFoundPage} from './common/NotFoundPage';
+
+export {default as profilePage} from './profile/ProfilePage';
