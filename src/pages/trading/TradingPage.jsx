@@ -17,7 +17,7 @@ export default function TradingPage(){
  <div className="trading-terminal-grid">
   <GlassCard className="card-chart trading-terminal-chart"><div className="card-chart-header"><div><h3>{asset?.name} / USD</h3><span className="text-secondary">{asset?.symbol} · 24h {asset?.change24>=0?'+':''}{Number(asset?.change24||0).toFixed(2)}%</span></div><strong className="trading-current-price">{money(price)}</strong></div>
    <div className="chart-asset-picker"><label>Market<select value={assetId} onChange={e=>setAssetId(e.target.value)}>{markets.map(m=><option key={m.id} value={m.id}>{m.symbol}/USD — {m.name}</option>)}</select></label></div>
-   <PriceChart data={asset?.history||[]} title={asset?.symbol||'Market'} height={390}/>
+   <PriceChart data={asset?.history||[]} title={asset?.symbol||'Market'} height={390} stopLoss={Number(stopLoss)||0} takeProfit={Number(takeProfit)||0}/>
   </GlassCard>
   <GlassCard className="trading-order-panel"><h3>Place order</h3><div className="trading-side-switch"><button className={side==='buy'?'buy-active':''} onClick={()=>setSide('buy')}>Buy / Long</button><button className={side==='sell'?'sell-active':''} onClick={()=>setSide('sell')}>Sell</button></div>
    <form onSubmit={submit} className="trading-order-form">
