@@ -19,15 +19,15 @@ export default function PriceChart({ symbol = 'BTC', title = 'BTC/USDT', height 
       theme: 'dark',
       style: '1',
       locale: 'en',
-      withdateranges: '1',
+      withdateranges: '0',
       hide_top_toolbar: '0',
-      hide_side_toolbar: '0',
+      hide_side_toolbar: '1',
       allow_symbol_change: '1',
       save_image: '0',
       calendar: '0',
       details: '1',
       hotlist: '0',
-      studies: 'Volume@tv-basicstudies',
+      hide_volume: '1',
       backgroundColor: '#131722',
       gridColor: 'rgba(42,46,57,0.06)',
       support_host: 'https://www.tradingview.com'
@@ -59,9 +59,7 @@ export default function PriceChart({ symbol = 'BTC', title = 'BTC/USDT', height 
           onError={() => setStatus('Chart unavailable — open full chart')}
         />
       </div>
-      <div className="chart-footnote">
-        Live market chart with timeframes, indicators, drawing tools, zoom and crosshair. Crypto1 orders remain simulated.
-      </div>
+      <div className="chart-footnote">Live {tvSymbol} market chart · Crypto1 orders are simulated.</div>
     </section>
   );
 }
