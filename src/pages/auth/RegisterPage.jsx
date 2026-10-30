@@ -5,7 +5,7 @@ import {requestEmailOtp,verifyEmailOtp} from '../../services/auth';
 
 export default function RegisterPage(){
  const [name,setName]=useState(''),[email,setEmail]=useState(''),[otp,setOtp]=useState('');
- const [otpSent,setOtpSent]=useState(false),[error,setError]=useState(''),[message,setMessage]=useState(''),[loading,setLoading]=useState(false);
+ const [otpSent,setOtpSent]=useState(false),[error,setError]=useState(''),[message,setMessage]=useState(''),[loading,setLoading]=useState(false),[devOtp,setDevOtp]=useState('');
  const navigate=useNavigate();
  const send=async e=>{e.preventDefault();setError('');setMessage('');setLoading(true);try{const result=await requestEmailOtp({email,fullName:name,purpose:'register'});setOtpSent(true);setDevOtp(result.devOtp||'');setMessage(result.message||'Verification code sent to your email.');}catch(err){setError(err.message)}finally{setLoading(false)}};
  const verify=async e=>{e.preventDefault();setError('');setLoading(true);try{await verifyEmailOtp({email,otp,purpose:'register'});navigate('/account');}catch(err){setError(err.message)}finally{setLoading(false)}};
