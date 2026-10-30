@@ -4,6 +4,7 @@ import {useApp} from '../../context/AppContext';
 import {apiUrl} from '../../services/api';
 import {getSessionToken,getStoredProfile,saveStoredProfile} from '../../services/auth';
 import {GlassCard} from '../../components/common/GlassCard';
+import './ProfilePage.css';
 
 const money=value=>Number(value||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
 export default function ProfilePage(){
