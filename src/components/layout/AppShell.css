@@ -21,3 +21,41 @@
  .main{margin-left:0;width:100%}
  .topbar{position:sticky;top:0;padding:0 12px;gap:8px}
 }
+
+/* Mobile navigation: opaque surfaces and deterministic hit targets */
+@media(max-width:768px){
+ .sidebar{background:#0B1422!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;opacity:1!important;filter:none!important;isolation:isolate;pointer-events:none;transition:transform .22s ease}
+ .sidebar.sidebar--open{pointer-events:auto;transform:translateX(0);visibility:visible}
+ .sidebar:not(.sidebar--open){visibility:hidden}
+ .sidebar-backdrop{background:rgba(2,6,12,.78)!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;opacity:1;z-index:210;pointer-events:auto;touch-action:manipulation}
+ .sidebar.sidebar--open{z-index:230}
+ .sidebar-header,.sidebar-nav,.sidebar-footer{position:relative;z-index:1}
+ .sidebar .nav-item{min-height:46px;padding:12px 16px;touch-action:manipulation;pointer-events:auto}
+ .sidebar .nav-item span{opacity:1;filter:none}
+ .sidebar .nav-group-label{color:#9FB0C5}
+ .sidebar-close{min-width:42px;min-height:42px;justify-content:center;align-items:center}
+}
+.trading-terminal-grid{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(300px,.85fr);gap:18px;align-items:start}
+.trading-terminal-chart,.trading-order-panel{min-width:0}
+.trading-current-price{font-size:1.25rem;color:var(--text-primary)}
+.chart-asset-picker{display:flex;justify-content:flex-end;margin:12px 0}
+.chart-asset-picker label{display:flex;align-items:center;gap:8px;font-size:.8rem;color:var(--text-secondary)}
+.chart-asset-picker select{padding:8px 10px;min-width:150px}
+.trading-side-switch{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:rgba(148,163,184,.08);padding:5px;border-radius:10px;margin:16px 0}
+.trading-side-switch button{border:0;border-radius:7px;padding:10px;background:transparent;color:var(--text-secondary);font-weight:700;cursor:pointer}
+.trading-side-switch button.buy-active{background:rgba(22,199,132,.18);color:#16C784}
+.trading-side-switch button.sell-active{background:rgba(234,57,67,.16);color:#F87171}
+.trading-order-form{display:grid;gap:13px}
+.trading-order-form label{display:grid;gap:6px;font-size:.82rem;color:var(--text-secondary)}
+.trading-order-form input,.trading-order-form select{width:100%;padding:11px 12px;min-width:0}
+.trading-order-form small{font-size:.7rem;color:var(--text-secondary);line-height:1.4}
+.trading-quick-qty{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.trading-quick-qty button{background:rgba(148,163,184,.1);border:1px solid var(--glass-border);color:var(--text-primary);border-radius:7px;padding:7px 4px;cursor:pointer}
+.trading-risk-settings{border:1px solid var(--glass-border);border-radius:10px;padding:12px;display:grid;gap:10px}
+.trading-risk-settings h4{font-size:.86rem;color:var(--text-primary)}
+.trading-order-summary{display:grid;gap:8px;background:rgba(148,163,184,.06);padding:12px;border-radius:9px}
+.trading-order-summary div{display:flex;justify-content:space-between;gap:10px;font-size:.78rem}
+.trading-order-summary span{color:var(--text-secondary)}
+.trading-order-summary b{color:var(--text-primary);text-align:right}
+@media(max-width:1000px){.trading-terminal-grid{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:520px){.chart-asset-picker label{width:100%;display:grid}.chart-asset-picker select{width:100%}.trading-current-price{font-size:1rem}.trading-order-panel{padding:14px!important}}
