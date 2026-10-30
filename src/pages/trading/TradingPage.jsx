@@ -1,71 +1,20 @@
-import { useEffect } from 'react';
-import API from '../../services/localBackend';
+import { useMemo, useState } from 'react';
 import { GlassCard } from '../../components/common/GlassCard';
+import PriceChart from '../../components/charts/PriceChart';
 import { useApp } from '../../context/AppContext';
 
-export default function TradingPage() {
-  const { orders } = useApp();
-
-  useEffect(() => {
-    API.getMarkets();
-  }, []);
-
-  const recentOrders = (orders || []).slice(0, 5);
-
-  return (
-    <div className="page-content">
-      <GlassCard className="page-header">
-        <h1>Trading Simulator</h1>
-        <p className="page-subtitle">Simulated spot trading — all orders are local demo operations with no real exchange integration</p>
-      </GlassCard>
-
-      <GlassCard style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-        <div className="grid grid-3">
-          <button className="btn btn--primary" style={{ width: '100%' }}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 20, height: 20 }}><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/></svg>
-            Demo Buy Order
-          </button>
-          <button className="btn btn--secondary" style={{ width: '100%' }}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 20, height: 20 }}><path d="M12 2l10 5-10 5-10-5z"/><path d="M2 17l10 5 10-5"/></svg>
-            Demo Sell Order
-          </button>
-          <button className="btn btn--ghost" style={{ width: '100%' }}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 20, height: 20 }}><path d="M12 2v20M12 12L18 6M12 12L6 6"/></svg>
-            Asset Conversion
-          </button>
-        </div>
-
-        <div className="card-chart-header" style={{ marginTop: '16px' }}>
-          <h3>Recent Orders</h3>
-        </div>
-        {recentOrders.length ? (
-          <div className="table-wrapper">
-            <div className="table">
-              <div className="table-header">
-                <div className="table-cell table-header-cell">Order ID</div>
-                <div className="table-cell table-header-cell">Type</div>
-                <div className="table-cell table-header-cell">Asset</div>
-                <div className="table-cell table-header-cell">Quantity</div>
-                <div className="table-cell table-header-cell">Status</div>
-              </div>
-              {recentOrders.map((o) => (
-                <div key={o.id} className="table-row">
-                  <div className="table-cell">{o.id?.substring(0, 8)}...</div>
-                  <div className="table-cell">{o.type}</div>
-                  <div className="table-cell">{o.symbol || o.assetId}</div>
-                  <div className="table-cell">{o.quantity?.toFixed(4)}</div>
-                  <div className={`table-cell text-${o.status === 'completed' ? 'success' : 'danger'}`}>{o.status}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        ) : (
-          <div style={{ textAlign: 'center', padding: '40px', opacity: 0.6 }}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ width: 48, height: 48, margin: '0 auto 16px', opacity: 0.4 }}><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-            <p>No recent orders</p>
-          </div>
-        )}
-      </GlassCard>
-    </div>
-  );
+const money = n => '$' + Number(n||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+export default function TradingPage(){
+ const {markets,trade,orders,cash,holdings}=useApp();
+ const [assetId,setAssetId]=useState('bitcoin'); const [side,setSide]=useState('buy'); const [quantity,setQuantity]=useState('0.01'); const [message,setMessage]=useState(''); const [error,setError]=useState('');
+ const asset=markets.find(m=>m.id===assetId)||markets[0]; const qty=Number(quantity)||0; const total=(asset?.price||0)*qty; const fee=total*.001;
+ const holding=holdings.find(h=>h.id===asset?.id);
+ const submit=e=>{e.preventDefault();setMessage('');setError('');try{const o=trade({side,assetId:asset.id,quantity:qty});setMessage(o.type+' order filled · '+o.quantity+' '+o.symbol);setQuantity('0.01');}catch(err){setError(err.message)}};
+ return <div className="page-content">
+ <GlassCard className="page-header"><h1>Spot Trading</h1><p className="page-subtitle">Buy low, sell high · simulated exchange · 0.10% demo fee</p></GlassCard>
+ <div className="grid grid-2">
+ <GlassCard className="card-chart"><div className="card-chart-header"><h3>{asset?.name} ({asset?.symbol})</h3><strong>{money(asset?.price)}</strong></div><PriceChart data={asset?.history||[]} title={asset?.symbol||'Market'} height={300}/><p className={asset?.change24>=0?'text-success':'text-danger'}>{asset?.change24>=0?'+':''}{asset?.change24?.toFixed(2)}% 24h</p></GlassCard>
+ <GlassCard><h3 style={{marginBottom:16}}>Place order</h3><div className="grid grid-2"><button className={side==='buy'?'btn btn--primary':'btn btn--ghost'} onClick={()=>setSide('buy')}>Buy</button><button className={side==='sell'?'btn btn--secondary':'btn btn--ghost'} onClick={()=>setSide('sell')}>Sell</button></div>
+ <form onSubmit={submit} style={{display:'grid',gap:14,marginTop:18}}><label>Asset<select value={assetId} onChange={e=>setAssetId(e.target.value)} style={{width:'100%',padding:12,marginTop:6}}>{markets.map(m=><option key={m.id} value={m.id}>{m.name} ({m.symbol}) · {money(m.price)}</option>)}</select></label><label>Quantity<input type="number" min="0.00000001" step="any" required value={quantity} onChange={e=>setQuantity(e.target.value)} style={{width:'100%',padding:12,marginTop:6}}/></label><div style={{display:'grid',gap:6}}><div>Market price: <b>{money(asset?.price)}</b></div><div>Order value: <b>{money(total)}</b></div><div>Fee (0.10%): <b>{money(fee)}</b></div><div>Estimated total: <b>{money(side==='buy'?total+fee:total-fee)}</b></div><div>Available USD: <b>{money(cash)}</b></div><div>Available {asset?.symbol}: <b>{holding?.quantity?.toFixed(8)||'0'}</b></div></div><button className={side==='buy'?'btn btn--primary':'btn btn--secondary'} type="submit">{side==='buy'?'Buy':'Sell'} {asset?.symbol}</button>{message&&<p className="text-success">{message}</p>}{error&&<p className="text-danger">{error}</p>}</form></GlassCard></div>
+ <GlassCard className="card-chart"><div className="card-chart-header"><h3>Order history</h3><span>{orders.length} orders</span></div><div className="table-wrapper"><table className="table"><thead><tr><th>Time</th><th>Side</th><th>Asset</th><th>Quantity</th><th>Price</th><th>Status</th></tr></thead><tbody>{orders.map(o=><tr key={o.id}><td>{new Date(o.createdAt).toLocaleString()}</td><td>{o.type}</td><td>{o.symbol}</td><td>{o.quantity}</td><td>{money(o.price)}</td><td className="text-success">{o.status}</td></tr>)}</tbody></table>{!orders.length&&<div className="table-empty">No trades yet. Place your first order above.</div>}</div></GlassCard></div>
 }
