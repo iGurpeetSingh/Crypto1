@@ -158,3 +158,116 @@
   100% { background-position: -200% 0; }
 }
 
+
+
+/* Crypto1 mobile layout system: edge-to-edge content and consistent full-width panels */
+@media (max-width: 768px) {
+  .main,
+  .content,
+  .main > .content {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .content {
+    padding: 0 !important;
+  }
+
+  .page-content {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    gap: 10px !important;
+  }
+
+  .page-content > *,
+  .page-content .grid > *,
+  .page-content .trading-terminal-grid > *,
+  .page-content .terminal-workspace > * {
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  .page-content .grid,
+  .page-content .grid-2,
+  .page-content .grid-3,
+  .page-content .grid-4 {
+    width: 100% !important;
+    gap: 0 !important;
+    margin: 0 !important;
+  }
+
+  .page-content .glass-card,
+  .page-content .metric-card,
+  .page-content .card-chart,
+  .page-content .chart-container,
+  .page-content .terminal-panel,
+  .page-content .account-profile-hero,
+  .page-content .real-wallet-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    border-left: 0 !important;
+    border-right: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .page-content .glass-card,
+  .page-content .metric-card,
+  .page-content .card-chart,
+  .page-content .chart-container {
+    padding: 16px !important;
+    border-top: 1px solid var(--glass-border) !important;
+    border-bottom: 1px solid var(--glass-border) !important;
+  }
+
+  .page-content .grid > * + *,
+  .page-content > .glass-card + .glass-card,
+  .page-content > .metric-card + .metric-card {
+    border-top: 1px solid var(--glass-border) !important;
+  }
+
+  .page-content .page-header {
+    width: 100% !important;
+    padding: 16px !important;
+    margin: 0 !important;
+  }
+
+  .page-content .table-wrapper,
+  .page-content .terminal-table-scroll {
+    width: 100% !important;
+    max-width: 100% !important;
+    border-radius: 0 !important;
+  }
+
+  .page-content .terminal-chart-panel {
+    border-radius: 0 !important;
+  }
+
+  .page-content .terminal-order-entry,
+  .page-content .terminal-book,
+  .page-content .terminal-right > .terminal-panel {
+    padding: 14px !important;
+  }
+
+  .page-content .terminal-market-head {
+    margin: 0 !important;
+    border-radius: 0 !important;
+    border-left: 0 !important;
+    border-right: 0 !important;
+  }
+}
+
+@media (max-width: 520px) {
+  .page-content { gap: 8px !important; }
+  .page-content .glass-card,
+  .page-content .metric-card,
+  .page-content .card-chart,
+  .page-content .chart-container { padding: 14px !important; }
+}
