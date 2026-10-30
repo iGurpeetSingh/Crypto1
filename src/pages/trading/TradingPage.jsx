@@ -1,68 +1,152 @@
-import {useState} from 'react';
-import {GlassCard} from '../../components/common/GlassCard';
+import { useEffect, useMemo, useState } from 'react';
+import { GlassCard } from '../../components/common/GlassCard';
 import PriceChart from '../../components/charts/PriceChart';
-import {useApp} from '../../context/AppContext';
-const money=n=>'$'+Number(n||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+import { useApp } from '../../context/AppContext';
+import './TradingPage.css';
+
+const money=(n,d=2)=>Number(n||0).toLocaleString(undefined,{minimumFractionDigits:d,maximumFractionDigits:d});
+const pairFor=s=>String(s||'BTC').toUpperCase().replace(/USDT$/,'')+'USDT';
+const timeOf=t=>new Date(t).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+
 export default function TradingPage(){
- const {markets,trade,placeLimitOrder,cancelLimitOrder,orders,pendingOrders,cash,holdings,marketSource}=useApp();
- const [assetId,setAssetId]=useState('bitcoin'),[side,setSide]=useState('buy'),[quantity,setQuantity]=useState('0.01');
- const [entryType,setEntryType]=useState('market'),[limitPrice,setLimitPrice]=useState('');
- const [stopLoss,setStopLoss]=useState(''),[takeProfit,setTakeProfit]=useState('');
+ const {markets,trade,placeLimitOrder,cancelLimitOrder,orders,pendingOrders,cash,holdings,marketSource,transactions}=useApp();
+ const [assetId,setAssetId]=useState('bitcoin'),[side,setSide]=useState('buy');
+ const [orderType,setOrderType]=useState('limit'),[quantity,setQuantity]=useState('0.001');
+ const [limitPrice,setLimitPrice]=useState(''),[stopLoss,setStopLoss]=useState(''),[takeProfit,setTakeProfit]=useState('');
  const [message,setMessage]=useState(''),[error,setError]=useState('');
- const asset=markets.find(m=>m.id===assetId)||markets[0],qty=Number(quantity)||0,price=asset?.price||0;
- const executionPrice=entryType==='limit'?(Number(limitPrice)||price):price;
- const gross=executionPrice*qty,fee=gross*.001;
- const holding=holdings.find(h=>h.id===asset?.id);
- const estimated=side==='buy'?gross+fee:gross-fee;
- const validRisk=side!=='buy'||((!Number(stopLoss)||Number(stopLoss)<executionPrice)&&(!Number(takeProfit)||Number(takeProfit)>executionPrice));
+ const [book,setBook]=useState({bids:[],asks:[]}),[recentTrades,setRecentTrades]=useState([]);
+ const [feedState,setFeedState]=useState('Connecting to Binance public market feed');
+ const [tableTab,setTableTab]=useState('open'),[bookMode,setBookMode]=useState('both');
+ const [lastTick,setLastTick]=useState(Date.now());
+ const asset=markets.find(m=>m.id===assetId)||markets[0];
+ const pair=pairFor(asset?.symbol),price=Number(asset?.price||0),qty=Number(quantity)||0;
+ const holding=holdings.find(h=>h.id===asset?.id),maxQty=side==='buy'?cash/(Math.max(price,1e-10)*1.001):Number(holding?.quantity||0);
+ const executionPrice=orderType==='limit'?(Number(limitPrice)||price):price;
+ const total=executionPrice*qty,fee=total*.001,estimated=side==='buy'?total+fee:total-fee;
+ const openOrders=pendingOrders.filter(o=>o.status==='OPEN');
+ const marketOrders=orders.filter(o=>o.symbol===asset?.symbol);
+ const change=Number(asset?.change24||0);
+
+ useEffect(()=>{
+  let stopped=false,timer;
+  const load=async()=>{
+   try{
+    const [depthRes,tradesRes]=await Promise.all([
+     fetch('https://api.binance.com/api/v3/depth?symbol='+pair+'&limit=12'),
+     fetch('https://api.binance.com/api/v3/trades?symbol='+pair+'&limit=18')
+    ]);
+    if(!depthRes.ok||!tradesRes.ok)throw new Error('Binance public feed unavailable');
+    const [depth,ticks]=await Promise.all([depthRes.json(),tradesRes.json()]);
+    if(stopped)return;
+    setBook({bids:(depth.bids||[]).slice(0,12),asks:(depth.asks||[]).slice(0,12).reverse()});
+    setRecentTrades((ticks||[]).slice().reverse());
+    setFeedState('Binance spot · live public feed');
+    setLastTick(Date.now());
+   }catch(e){if(!stopped)setFeedState('Live order book unavailable · chart and demo ledger remain available');}
+  };
+  load();timer=setInterval(load,5000);
+  return()=>{stopped=true;clearInterval(timer);};
+ },[pair]);
+
  const submit=e=>{
   e.preventDefault();setMessage('');setError('');
   try{
-   if(entryType==='limit'){
-    const order=placeLimitOrder({side,assetId:asset.id,quantity:qty,limitPrice,stopLoss,takeProfit});
+   if(!asset)throw new Error('Select a market first.');
+   if(orderType==='limit'){
+    const order=placeLimitOrder({side,assetId,quantity:qty,limitPrice:Number(limitPrice),stopLoss,takeProfit});
     setMessage('Limit order placed · '+order.id+' · waiting for '+money(order.limitPrice));
    }else{
-    const order=trade({side,assetId:asset.id,quantity:qty,stopLoss,takeProfit});
-    setMessage(order.type+' market order filled · '+order.quantity+' '+order.symbol+' at '+money(order.price));
+    const order=trade({side,assetId,quantity:qty,stopLoss,takeProfit});
+    setMessage(order.type+' market order filled · '+order.quantity+' '+order.symbol+' at $'+money(order.price));
    }
-  }catch(err){setError(err.message)}
+  }catch(e){setError(e.message);}
  };
- const maxQuantity=side==='buy'?cash/(Math.max(executionPrice,.00000001)*1.001):Number(holding?.quantity||0);
- return <div className="page-content">
-  <GlassCard className="page-header"><h1>Spot Trading</h1><p className="page-subtitle">Market and limit orders · 0.10% simulated fee · demo exchange</p></GlassCard>
-  <div className="trading-terminal-grid">
-   <GlassCard className="card-chart trading-terminal-chart">
-    <div className="card-chart-header"><div><h3>{asset?.name} / USD</h3><span className="text-secondary">{asset?.symbol} · 24h {asset?.change24>=0?'+':''}{Number(asset?.change24||0).toFixed(2)}%</span></div><strong className="trading-current-price">{money(price)}</strong></div>
-    <div className="chart-asset-picker"><label>Market<select value={assetId} onChange={e=>{setAssetId(e.target.value);setStopLoss('');setTakeProfit('');}}>{markets.map(m=><option key={m.id} value={m.id}>{m.symbol}/USD — {m.name}</option>)}</select></label></div>
-    <PriceChart data={asset?.history||[]} title={asset?.symbol||'Market'} symbol={asset?.symbol||'BTC'} height={390} stopLoss={Number(stopLoss)||Number(holding?.stopLoss)||0} takeProfit={Number(takeProfit)||Number(holding?.takeProfit)||0}/>
-    <div className="trading-feed-status">{marketSource||'Market data'} · Quotes update automatically. Demo orders execute in this browser.</div>
-   </GlassCard>
-   <GlassCard className="trading-order-panel"><h3>Place order</h3>
-    <div className="trading-side-switch"><button type="button" className={side==='buy'?'buy-active':''} onClick={()=>{setSide('buy');setMessage('');setError('');}}>Buy / Long</button><button type="button" className={side==='sell'?'sell-active':''} onClick={()=>{setSide('sell');setMessage('');setError('');}}>Sell</button></div>
-    <form onSubmit={submit} className="trading-order-form">
-     <label>Order type<select value={entryType} onChange={e=>setEntryType(e.target.value)}><option value="market">Market — execute immediately</option><option value="limit">Limit — execute at target price</option></select></label>
-     {entryType==='limit'&&<label>Limit price (USD)<input type="number" min="0.00000001" step="any" required value={limitPrice} onChange={e=>setLimitPrice(e.target.value)} placeholder={String(price)}/><small>Buy fills when market price reaches or drops below your limit. Sell fills when it reaches or rises above your limit.</small></label>}
-     <label>Quantity ({asset?.symbol})<input type="number" min="0.00000001" step="any" required value={quantity} onChange={e=>setQuantity(e.target.value)}/></label>
-     <div className="trading-quick-qty">{[.25,.5,.75,1].map(v=><button type="button" key={v} onClick={()=>setQuantity((maxQuantity*v).toFixed(8))}>{v===1?'Max':Math.round(v*100)+'%'}</button>)}</div>
-     <div className="trading-risk-settings"><h4>Position protection</h4>
-      <label>Stop-loss price (USD)<input type="number" min="0" step="any" value={stopLoss} onChange={e=>setStopLoss(e.target.value)} placeholder="Optional"/></label>
-      <label>Take-profit price (USD)<input type="number" min="0" step="any" value={takeProfit} onChange={e=>setTakeProfit(e.target.value)} placeholder="Optional"/></label>
-      <small>Saved to the demo position. Trigger checks run when market quotes refresh while this app is open.</small>
-     </div>
-     <div className="trading-order-summary"><div><span>Current market price</span><b>{money(price)}</b></div>{entryType==='limit'&&<div><span>Limit execution price</span><b>{money(executionPrice)}</b></div>}<div><span>Order value</span><b>{money(gross)}</b></div><div><span>Trading fee (0.10%)</span><b>{money(fee)}</b></div><div><span>Estimated {side==='buy'?'cost':'proceeds'}</span><b>{money(estimated)}</b></div><div><span>Available USD</span><b>{money(cash)}</b></div><div><span>Available {asset?.symbol}</span><b>{Number(holding?.quantity||0).toFixed(8)}</b></div></div>
-     {!validRisk&&<p className="text-danger">For a long position, stop-loss must be below the entry price and take-profit above it.</p>}
-     <button className={side==='buy'?'btn btn--primary':'btn btn--secondary'} type="submit" disabled={!asset||qty<=0||!validRisk||(side==='sell'&&qty>Number(holding?.quantity||0))}>{entryType==='limit'?'Place '+side.toUpperCase()+' LIMIT':side==='buy'?'Buy':'Sell'} {asset?.symbol}</button>
-     {message&&<p className="text-success" role="status">{message}</p>}{error&&<p className="text-danger" role="alert">{error}</p>}
-    </form>
-   </GlassCard>
+ const pct=v=>maxQty>0?(maxQty*v).toFixed(8):'0';
+ const depthRows=useMemo(()=>{
+  const asks=book.asks.map(([p,q])=>({price:Number(p),qty:Number(q),side:'ask'}));
+  const bids=book.bids.map(([p,q])=>({price:Number(p),qty:Number(q),side:'bid'}));
+  return {asks,bids};
+ },[book]);
+ const activeRows=tableTab==='open'?openOrders:tableTab==='orders'?orders:tableTab==='trades'?marketOrders:transactions;
+
+ return <div className="page-content binance-terminal">
+  <div className="terminal-market-head">
+   <div className="terminal-pair">
+    <select aria-label="Trading market" value={assetId} onChange={e=>{setAssetId(e.target.value);setLimitPrice('');setStopLoss('');setTakeProfit('');}}>
+     {markets.map(m=><option key={m.id} value={m.id}>{m.symbol}/USDT · {m.name}</option>)}
+    </select>
+    <div className="terminal-price-line"><strong>${money(price)}</strong><span className={change>=0?'positive':'negative'}>{change>=0?'+':''}{change.toFixed(2)}%</span></div>
+    <small>{asset?.name} · {pair}</small>
+   </div>
+   <div className="terminal-stat"><small>24h High</small><b>${money(asset?.high24||price*1.025)}</b></div>
+   <div className="terminal-stat"><small>24h Low</small><b>${money(asset?.low24||price*.975)}</b></div>
+   <div className="terminal-stat"><small>24h Volume</small><b>${money(asset?.volume24||0,0)}</b></div>
+   <div className="terminal-status"><i/> {feedState}</div>
   </div>
-  <GlassCard className="card-chart"><div className="card-chart-header"><h3>Open limit orders</h3><span>{pendingOrders.filter(o=>o.status==='OPEN').length} open</span></div>
-   <div className="table-wrapper"><table className="table"><thead><tr><th>Time</th><th>Side</th><th>Asset</th><th>Quantity</th><th>Limit price</th><th>Status</th><th>Action</th></tr></thead><tbody>
-    {pendingOrders.map(o=><tr key={o.id}><td>{new Date(o.createdAt).toLocaleString()}</td><td>{o.side}</td><td>{o.symbol}</td><td>{o.quantity}</td><td>{money(o.limitPrice)}</td><td>{o.status}</td><td>{o.status==='OPEN'&&<button type="button" className="btn btn--ghost btn--small" onClick={()=>cancelLimitOrder(o.id)}>Cancel</button>}{o.status==='REJECTED'&&<span className="text-danger">{o.rejectionReason}</span>}</td></tr>)}
-   </tbody></table>{!pendingOrders.length&&<div className="table-empty">No limit orders placed.</div>}</div>
-  </GlassCard>
-  <GlassCard className="card-chart"><div className="card-chart-header"><h3>Filled order history</h3><span>{orders.length} fills</span></div>
-   <div className="table-wrapper"><table className="table"><thead><tr><th>Time</th><th>Side</th><th>Asset</th><th>Quantity</th><th>Fill price</th><th>Fee</th><th>Reason</th><th>Status</th></tr></thead><tbody>{orders.map(o=><tr key={o.id}><td>{new Date(o.createdAt).toLocaleString()}</td><td>{o.type}</td><td>{o.symbol}</td><td>{o.quantity}</td><td>{money(o.price)}</td><td>{money(o.fee)}</td><td>{o.triggerReason||'Manual'}</td><td className="text-success">{o.status}</td></tr>)}</tbody></table>{!orders.length&&<div className="table-empty">No fills yet. Place your first order above.</div>}</div>
-  </GlassCard>
+
+  <div className="terminal-workspace">
+   <section className="terminal-book terminal-panel">
+    <div className="terminal-panel-title"><b>Order Book</b><select value={bookMode} onChange={e=>setBookMode(e.target.value)} aria-label="Order book view"><option value="both">Both</option><option value="bids">Bids</option><option value="asks">Asks</option></select></div>
+    <div className="book-labels"><span>Price (USDT)</span><span>Amount ({asset?.symbol})</span></div>
+    {bookMode!=='bids'&&depthRows.asks.map((r,i)=><div className="book-row ask" key={'a'+i}><span>{money(r.price,price<1?5:2)}</span><span>{money(r.qty,4)}</span><i style={{width:Math.min(100,r.qty/(Math.max(...depthRows.asks.map(x=>x.qty),.000001))*100)+'%'}}/></div>)}
+    <div className="book-mid-price"><b>${money(price)}</b><span className={change>=0?'positive':'negative'}>{change>=0?'▲':'▼'} {Math.abs(change).toFixed(2)}%</span></div>
+    {bookMode!=='asks'&&depthRows.bids.map((r,i)=><div className="book-row bid" key={'b'+i}><span>{money(r.price,price<1?5:2)}</span><span>{money(r.qty,4)}</span><i style={{width:Math.min(100,r.qty/(Math.max(...depthRows.bids.map(x=>x.qty),.000001))*100)+'%'}}/></div>)}
+    {!depthRows.bids.length&&!depthRows.asks.length&&<p className="terminal-muted">Waiting for live order book…</p>}
+   </section>
+
+   <div className="terminal-center">
+    <section className="terminal-panel terminal-chart-panel">
+     <div className="terminal-chart-title"><div><b>{pair}</b><span className="terminal-live"><i/> LIVE</span></div><small>Spot · Candlestick chart</small></div>
+     <PriceChart data={asset?.history||[]} title={asset?.symbol||'BTC'} symbol={asset?.symbol||'BTC'} height={390}/>
+    </section>
+    <section className="terminal-panel terminal-order-entry">
+     <div className="terminal-order-heading"><b>Spot</b><span>Available <strong>${money(cash)}</strong></span><span>Fee <strong>0.10%</strong></span></div>
+     <div className="terminal-order-grid">
+      <form onSubmit={submit} className="terminal-order-form">
+       <div className="terminal-order-tabs"><button type="button" className={side==='buy'?'selected buy':'buy'} onClick={()=>{setSide('buy');setMessage('');setError('');}}>Buy {asset?.symbol}</button><button type="button" className={side==='sell'?'selected sell':'sell'} onClick={()=>{setSide('sell');setMessage('');setError('');}}>Sell {asset?.symbol}</button></div>
+       <div className="terminal-type-tabs"><button type="button" className={orderType==='limit'?'active':''} onClick={()=>setOrderType('limit')}>Limit</button><button type="button" className={orderType==='market'?'active':''} onClick={()=>setOrderType('market')}>Market</button></div>
+       {orderType==='limit'&&<label>Price (USDT)<input type="number" min="0.00000001" step="any" required value={limitPrice} onChange={e=>setLimitPrice(e.target.value)} placeholder={money(price)}/></label>}
+       <label>Amount ({asset?.symbol})<input type="number" min="0.00000001" step="any" required value={quantity} onChange={e=>setQuantity(e.target.value)} placeholder="0.00"/></label>
+       <div className="terminal-percent">{[.25,.5,.75,1].map(v=><button type="button" key={v} onClick={()=>setQuantity(pct(v))}>{v===1?'100%':v*100+'%'}</button>)}</div>
+       <div className="terminal-order-total"><span>Est. Total</span><b>${money(estimated)} USDT</b></div>
+       <button className={'terminal-submit '+side} type="submit" disabled={!asset||qty<=0||(orderType==='limit'&&!(Number(limitPrice)>0))||(side==='sell'&&qty>Number(holding?.quantity||0))}>{side==='buy'?'Buy':'Sell'} {asset?.symbol}</button>
+       <div className="terminal-balance-line"><span>Available {side==='buy'?'USDT':' '+asset?.symbol}</span><b>{side==='buy'?money(cash):money(holding?.quantity||0,6)}</b></div>
+       {message&&<p className="terminal-success" role="status">{message}</p>}{error&&<p className="terminal-error" role="alert">{error}</p>}
+      </form>
+      <div className="terminal-protection">
+       <b>Advanced settings</b>
+       <label>Stop-loss (USDT)<input type="number" min="0" step="any" value={stopLoss} onChange={e=>setStopLoss(e.target.value)} placeholder="Optional"/></label>
+       <label>Take-profit (USDT)<input type="number" min="0" step="any" value={takeProfit} onChange={e=>setTakeProfit(e.target.value)} placeholder="Optional"/></label>
+       <div className="terminal-fee-note">Market orders execute immediately in your simulated spot wallet. Limit orders wait for the selected price while this browser app is open. Trading is simulated; no exchange order is submitted.</div>
+      </div>
+     </div>
+    </section>
+   </div>
+
+   <aside className="terminal-right">
+    <section className="terminal-panel">
+     <div className="terminal-panel-title"><b>Market Trades</b><small>Live</small></div>
+     <div className="terminal-trade-head"><span>Price (USDT)</span><span>Amount</span><span>Time</span></div>
+     <div className="terminal-tape">{recentTrades.map(t=><div className={t.isBuyerMaker?'negative':'positive'} key={t.id}><span>{money(t.price,price<1?5:2)}</span><span>{money(t.qty,4)}</span><span>{timeOf(t.time)}</span></div>)}
+      {!recentTrades.length&&<p className="terminal-muted">Waiting for trades…</p>}
+     </div>
+     <div className="terminal-feed-foot">Updated {timeOf(lastTick)}</div>
+    </section>
+    <section className="terminal-panel terminal-wallet-mini">
+     <b>Spot Wallet</b><strong>${money(cash)}</strong><small>Available demo balance</small>
+     <a href="/wallet">Open Wallet →</a>
+    </section>
+   </aside>
+  </div>
+
+  <section className="terminal-panel terminal-history">
+   <div className="terminal-history-tabs">
+    {[['open','Open Orders',openOrders.length],['orders','Order History',orders.length],['trades','My Trades',marketOrders.length],['funds','Funds',transactions.length]].map(([id,label,count])=><button key={id} className={tableTab===id?'active':''} onClick={()=>setTableTab(id)}>{label} <span>{count}</span></button>)}
+   </div>
+   <div className="terminal-table-scroll"><table><thead><tr>{tableTab==='open'?<><th>Date</th><th>Pair</th><th>Type</th><th>Side</th><th>Price</th><th>Amount</th><th>Status</th><th>Action</th></>:tableTab==='funds'?<><th>Date</th><th>Type</th><th>Description</th><th>Amount</th></>:<><th>Date</th><th>Pair</th><th>Side</th><th>Price</th><th>Amount</th><th>Fee</th><th>Status</th></>}</tr></thead><tbody>
+    {activeRows.map((o,i)=><tr key={o.id||i}>{tableTab==='open'?<><td>{new Date(o.createdAt).toLocaleString()}</td><td>{o.symbol}/USDT</td><td>Limit</td><td className={o.side==='BUY'?'positive':'negative'}>{o.side}</td><td>{money(o.limitPrice)}</td><td>{money(o.quantity,6)}</td><td>{o.status}</td><td>{o.status==='OPEN'&&<button className="terminal-cancel" onClick={()=>cancelLimitOrder(o.id)}>Cancel</button>}</td></>:tableTab==='funds'?<><td>{new Date(o.createdAt).toLocaleString()}</td><td>{o.type}</td><td>{o.description}</td><td>{money(o.amount)}</td></>:<><td>{new Date(o.createdAt).toLocaleString()}</td><td>{o.symbol}/USDT</td><td className={o.type==='BUY'?'positive':'negative'}>{o.type}</td><td>{money(o.price)}</td><td>{money(o.quantity,6)}</td><td>{money(o.fee)}</td><td>{o.status}</td></>}</tr>)}
+    </tbody></table>{!activeRows.length&&<div className="terminal-empty">No records yet. Your orders and trades will appear here.</div>}</div>
+   <div className="terminal-disclaimer">Market data is supplied by public exchange endpoints. Orders are simulated in CryptoDash and do not execute on Binance or any real exchange.</div>
+  </section>
  </div>;
 }
