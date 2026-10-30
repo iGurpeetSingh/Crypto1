@@ -27,7 +27,8 @@ export function AppProvider({ children }) {
   const [cash,setCash] = useState(initial.cash ?? 10000);
   const [funding,setFunding] = useState(initial.funding ?? 5000);
   const [holdings,setHoldings] = useState(initial.holdings || []);
-  const [orders,setOrders] = useState(initial.orders || []);\n  const [pendingOrders,setPendingOrders] = useState(initial.pendingOrders || []);
+  const [orders,setOrders] = useState(initial.orders || []);
+  const [pendingOrders,setPendingOrders] = useState(initial.pendingOrders || []);
   const [transactions,setTransactions] = useState(initial.transactions || []);
   const [loading,setLoading] = useState(false);
   const [marketSource,setMarketSource] = useState('Fallback demo prices');
