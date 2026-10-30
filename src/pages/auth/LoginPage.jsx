@@ -1,39 +1,9 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { GlassCard } from '../../components/common/GlassCard';
-
-export default function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const navigate = useNavigate();
-
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    navigate('/dashboard');
-  };
-
-  return (
-    <div className="page-content" style={{ minHeight: 'calc(100vh - 64px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-      <GlassCard style={{ maxWidth: '400px', width: '100%', padding: '32px' }}>
-        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-          <h1 style={{ margin: '0 0 8px' }}>Welcome Back</h1>
-          <p style={{ margin: '0', opacity: 0.7 }}>Sign in to your simulated account</p>
-        </div>
-        <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <label style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '14px', fontWeight: 500 }}>
-            Email
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} style={{ marginTop: '4px', padding: '10px', border: '1px solid var(--border)', borderRadius: '8px', background: 'var(--bg-card)' }} />
-          </label>
-          <label style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '14px', fontWeight: 500 }}>
-            Password
-            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} style={{ marginTop: '4px', padding: '10px', border: '1px solid var(--border)', borderRadius: '8px', background: 'var(--bg-card)' }} />
-          </label>
-          <button type="submit" className="btn btn--primary" style={{ width: '100%', padding: '12px' }}>Sign In</button>
-        </form>
-        <p style={{ marginTop: '20px', fontSize: '14px', textAlign: 'center' }}>
-          No account? <a href="/register" style={{ color: 'var(--accent)', cursor: 'pointer' }}>Register</a>
-        </p>
-      </GlassCard>
-    </div>
-  );
+import {useState} from 'react';
+import {NavLink,useNavigate} from 'react-router-dom';
+import {GlassCard} from '../../components/common/GlassCard';
+export default function LoginPage(){
+ const [email,setEmail]=useState(''),[password,setPassword]=useState(''),[error,setError]=useState('');
+ const navigate=useNavigate();
+ const submit=e=>{e.preventDefault();setError('');let user=null;try{user=JSON.parse(localStorage.getItem('crypto1_demo_user')||'null')}catch{}if(!user||user.email.toLowerCase()!==email.trim().toLowerCase()){setError('No matching local demo profile. Create a demo account first.');return}if(!password){setError('Enter your password.');return}navigate('/dashboard')};
+ return <main className="auth-page"><GlassCard className="auth-card"><div className="auth-brand"><span className="sidebar-logo-icon">₿</span> CryptoDash</div><h1>Welcome back</h1><p className="auth-subtitle">Sign in to your local demo profile</p><form className="auth-form" onSubmit={submit}><label>Email address<input type="email" autoComplete="email" required value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@example.com"/></label><label>Password<input type="password" autoComplete="current-password" required value={password} onChange={e=>setPassword(e.target.value)} placeholder="Your password"/></label>{error&&<p className="text-danger">{error}</p>}<button className="btn btn--primary" type="submit">Sign in</button></form><p className="auth-switch">New here? <NavLink to="/register">Create a demo account</NavLink></p><p className="auth-note">Demo-only sign-in. This is not production authentication.</p></GlassCard></main>;
 }
