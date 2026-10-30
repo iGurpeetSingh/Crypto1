@@ -1,8 +1,9 @@
+import {apiUrl} from './api';
 const SESSION_KEY='crypto1_session';
 const USER_KEY='crypto1_demo_user';
 
 async function post(path,payload){
- const response=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+ const response=await fetch(apiUrl(path),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
  const result=await response.json().catch(()=>({}));
  if(!response.ok)throw new Error(result.error||'Request failed ('+response.status+')');
  return result;
@@ -19,5 +20,5 @@ export function getStoredProfile(){
  try{return JSON.parse(localStorage.getItem(USER_KEY)||'null')}catch{return null;}
 }
 export function saveStoredProfile(profile){localStorage.setItem(USER_KEY,JSON.stringify(profile));}
-export function logout(){localStorage.removeItem(SESSION_KEY);localStorage.removeItem(USER_KEY);}
+export function logout(){const token=getSessionToken();if(token)fetch(apiUrl('/api/auth/logout'),{method:'POST',headers:{Authorization:'Bearer '+token}}).catch(()=>{});localStorage.removeItem(SESSION_KEY);localStorage.removeItem(USER_KEY);}
 export {SESSION_KEY,USER_KEY};
