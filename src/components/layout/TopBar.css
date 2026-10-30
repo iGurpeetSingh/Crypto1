@@ -105,3 +105,19 @@
   color: var(--primary);
   font-weight: 600;
 }
+
+.topbar-brand{border:0;background:transparent;cursor:pointer;padding:0;color:var(--text-primary)}
+.topbar-brand-icon{display:grid;place-items:center;width:34px;height:34px;border-radius:9px;background:var(--gradient-primary);color:white;font-size:1.2rem}
+.topbar-market-status{font-size:.7rem;letter-spacing:.06em;color:var(--success);font-weight:700;white-space:nowrap}
+.topbar-refresh,.topbar-account{white-space:nowrap}
+.mobile-menu-toggle{display:none}
+@media(max-width:768px){
+ .mobile-menu-toggle{display:flex;order:0}
+ .mobile-menu-toggle svg{width:22px;height:22px}
+ .topbar-brand{order:1}
+ .topbar-spacer{order:2}
+ .topbar-market-status{display:none}
+ .topbar-refresh{display:flex;order:3;padding:7px 10px;font-size:.78rem}
+ .topbar-account{display:none}
+}
+@media(max-width:420px){.topbar-refresh{font-size:0;padding:8px 10px}.topbar-refresh span{font-size:20px}}
