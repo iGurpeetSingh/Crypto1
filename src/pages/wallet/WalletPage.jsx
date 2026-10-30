@@ -1,117 +1,17 @@
-import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import API from '../../services/localBackend';
+import { useState } from 'react';
 import { GlassCard } from '../../components/common/GlassCard';
 import MetricCard from '../../components/cards/MetricCard';
 import { useApp } from '../../context/AppContext';
-
-export default function WalletPage() {
-  const { balances, refresh, loading } = useApp();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    API.getWallet();
-  }, []);
-
-  if (loading) return <div className="page-content"><GlassCard><div className="skeleton-grid" /></GlassCard></div>;
-
-  return (
-    <div className="page-content">
-      <GlassCard className="page-header">
-        <h1>Wallet</h1>
-        <p className="page-subtitle">Simulated demo wallet with internal demo accounts and transaction history</p>
-      </GlassCard>
-
-      <div className="grid grid-4">
-        <MetricCard
-          label="Total Balance"
-          value={`$${balances.toLocaleString(undefined, { maximumFractionDigits: 2, minimumFractionDigits: 2 })}`}
-          subtitle="Simulated demo balance"
-          icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/><path d="M20 4H11a3 3 0 0 0 3 3"/></svg>}
-          accent="#FF5CA8"
-          loading={loading}
-        />
-        <MetricCard
-          label="Accounts"
-          value="3"
-          subtitle="Demo Investor A, B, C"
-          icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>}
-          accent="#C084FC"
-          loading={loading}
-        />
-        <MetricCard
-          label="Profit/Loss"
-          value={`${balances >= 0 ? '+' : ''}${((balances - 25000) / 25000 * 100).toFixed(2)}%`}
-          subtitle="Demo balance change from starting balance"
-          icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z"/></svg>}
-          accent="#42DDAA"
-          loading={loading}
-        />
-        <MetricCard
-          label="Transactions"
-          value={0}
-          subtitle="Active demo operations"
-          icon={<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>}
-          accent="#FF9ECF"
-          loading={loading}
-        />
-      </div>
-
-      <div className="grid grid-2" style={{ marginTop: '20px' }}>
-        <GlassCard className="card-chart">
-          <div className="card-chart-header">
-            <h3>Quick Actions</h3>
-          </div>
-          <div className="quick-actions">
-            <button className="quick-action" onClick={() => navigate('/wallet/deposit')}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 20, height: 20 }}><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/></svg>
-              Deposit
-            </button>
-            <button className="quick-action" onClick={() => navigate('/wallet/withdraw')}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 20, height: 20 }}><path d="M3 21h18M4 17V9m4 8V5m4 12V7m4 12V9"/></svg>
-              Withdraw
-            </button>
-            <button className="quick-action" onClick={() => navigate('/wallet/transfer')}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 20, height: 20 }}><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
-              Transfer
-            </button>
-            <button className="quick-action" onClick={() => navigate('/wallet/history')}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 20, height: 20 }}><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-              History
-            </button>
-          </div>
-        </GlassCard>
-
-        <GlassCard className="card-chart">
-          <div className="card-chart-header">
-            <h3>Account Balances (Demo)</h3>
-          </div>
-          <div className="table-wrapper">
-            <div className="table">
-              <div className="table-header">
-                <div className="table-cell table-header-cell">Account</div>
-                <div className="table-cell table-header-cell">Balance</div>
-                <div className="table-cell table-header-cell">Type</div>
-              </div>
-              <div className="table-row">
-                <div className="table-cell">Demo Investor A</div>
-                <div className="table-cell">$25,000</div>
-                <div className="table-cell text-success">Active</div>
-              </div>
-              <div className="table-row">
-                <div className="table-cell">Demo Investor B</div>
-                <div className="table-cell">$15,000</div>
-                <div className="table-cell text-success">Active</div>
-              </div>
-              <div className="table-row">
-                <div className="table-cell">Demo Investor C</div>
-                <div className="table-cell">$8,000</div>
-                <div className="table-cell text-success">Active</div>
-              </div>
-            </div>
-          </div>
-        </GlassCard>
-      </div>
-    </div>
-  );
+const money=n=>'$'+Number(n||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+export default function WalletPage(){
+ const {cash,funding,transactions,moveFunds,addDemoFunds,holdings,markets}=useApp();
+ const [amount,setAmount]=useState('100');const [from,setFrom]=useState('funding');const [to,setTo]=useState('spot');const [notice,setNotice]=useState('');const [error,setError]=useState('');
+ const run=fn=>{setNotice('');setError('');try{fn();setNotice('Transaction completed.');}catch(e){setError(e.message)}};
+ return <div className="page-content"><GlassCard className="page-header"><h1>Wallet</h1><p className="page-subtitle">Demo spot and funding wallets · persistent local balance</p></GlassCard>
+ <div className="grid grid-3"><MetricCard label="Spot USD" value={money(cash)} subtitle="Available for trading" accent="#42DDAA"/><MetricCard label="Funding USD" value={money(funding)} subtitle="Available to transfer" accent="#C084FC"/><MetricCard label="Crypto assets" value={holdings.length} subtitle="Coins held" accent="#FF5CA8"/></div>
+ <div className="grid grid-2" style={{marginTop:20}}><GlassCard><h3>Demo deposit / withdraw</h3><p style={{margin:'8px 0 16px',opacity:.7}}>Adds or removes simulated USD only. No real payment is processed.</p><input type="number" min="0.01" step="0.01" value={amount} onChange={e=>setAmount(e.target.value)} style={{width:'100%',padding:12,marginBottom:12}}/><div className="grid grid-2"><button className="btn btn--primary" onClick={()=>run(()=>addDemoFunds({type:'deposit',amount}))}>Add demo funds</button><button className="btn btn--secondary" onClick={()=>run(()=>addDemoFunds({type:'withdraw',amount}))}>Withdraw demo funds</button></div></GlassCard>
+ <GlassCard><h3>Internal transfer</h3><div style={{display:'grid',gap:12,marginTop:14}}><label>From<select value={from} onChange={e=>setFrom(e.target.value)} style={{width:'100%',padding:10}}><option value="funding">Funding wallet</option><option value="spot">Spot wallet</option></select></label><label>To<select value={to} onChange={e=>setTo(e.target.value)} style={{width:'100%',padding:10}}><option value="spot">Spot wallet</option><option value="funding">Funding wallet</option></select></label><label>Amount (USD)<input type="number" min="0.01" step="0.01" value={amount} onChange={e=>setAmount(e.target.value)} style={{width:'100%',padding:10}}/></label><button className="btn btn--primary" onClick={()=>run(()=>moveFunds({from,to,amount}))}>Transfer</button></div></GlassCard></div>
+ {(notice||error)&&<p className={error?'text-danger':'text-success'}>{error||notice}</p>}
+ <GlassCard className="card-chart"><h3>Asset balances</h3><div className="table-wrapper"><table className="table"><thead><tr><th>Asset</th><th>Quantity</th><th>Market value</th></tr></thead><tbody>{holdings.map(h=>{const p=markets.find(m=>m.id===h.id)?.price||h.avgBuyPrice;return <tr key={h.id}><td>{h.name} ({h.symbol})</td><td>{h.quantity.toFixed(8)}</td><td>{money(h.quantity*p)}</td></tr>})}</tbody></table>{!holdings.length&&<div className="table-empty">No crypto holdings. Buy an asset from Spot Trading.</div>}</div></GlassCard>
+ <GlassCard className="card-chart"><h3>Transaction history</h3><div className="table-wrapper"><table className="table"><thead><tr><th>Date</th><th>Type</th><th>Description</th><th>Amount</th></tr></thead><tbody>{transactions.map(t=><tr key={t.id}><td>{new Date(t.createdAt).toLocaleString()}</td><td>{t.type}</td><td>{t.description}</td><td>{money(t.amount)}</td></tr>)}</tbody></table>{!transactions.length&&<div className="table-empty">No transactions yet.</div>}</div></GlassCard></div>;
 }
