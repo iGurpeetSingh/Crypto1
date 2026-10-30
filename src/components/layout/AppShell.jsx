@@ -31,12 +31,14 @@ export default function AppShell(){
  useEffect(()=>{if(!sidebarOpen)return;const previous=document.body.style.overflow;document.body.style.overflow='hidden';return()=>{document.body.style.overflow=previous}},[sidebarOpen]);
  const grouped=essential.reduce((acc,r)=>{(acc[r.group] ||= []).push(r);return acc},{});
  const drawer=<>
-  {sidebarOpen&&<button className="sidebar-backdrop" aria-label="Close navigation menu" onClick={()=>setSidebarOpen(false)}/>}
-  <aside className={`sidebar ${sidebarOpen?'sidebar--open':''}`} aria-label="Main navigation">
-   <div className="sidebar-header"><div className="sidebar-logo"><div className="sidebar-logo-icon">₿</div><span>Crypto<span style={{color:'var(--secondary)'}}>Dash</span></span></div><button className="topbar-btn topbar-btn--icon sidebar-close" onClick={()=>setSidebarOpen(false)} aria-label="Close menu">×</button></div>
-   <nav className="sidebar-nav">{Object.entries(grouped).map(([group,routes])=><div key={group} className="nav-group"><div className="nav-group-label">{groupLabels[group]||group}</div>{routes.map(r=><NavLink key={r.path} to={r.path} end className={({isActive})=>isActive?'nav-item nav-item--active':'nav-item'}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d={icons[group]||icons.overview}/></svg><span>{r.name}</span></NavLink>)}</div>)}</nav>
-   <div className="sidebar-footer"><span className="demo-badge">SIMULATED TRADING</span></div>
-  </aside>
+  {sidebarOpen&&<>
+   <button className="sidebar-backdrop" style={{position:'fixed',inset:0,zIndex:2147483000,display:'block',padding:0,margin:0,border:0,borderRadius:0,background:'rgba(0,0,0,.58)',backdropFilter:'none',WebkitBackdropFilter:'none',filter:'none',opacity:1}} aria-label="Close navigation menu" onClick={()=>setSidebarOpen(false)}/>
+   <aside id="crypto-mobile-drawer" className="sidebar sidebar--open" aria-label="Main navigation" style={{position:'fixed',top:0,left:0,bottom:0,width:'min(300px,84vw)',height:'100dvh',zIndex:2147483001,display:'flex',flexDirection:'column',overflowY:'auto',background:'#0B1422',borderRight:'1px solid #26364A',opacity:1,filter:'none',backdropFilter:'none',WebkitBackdropFilter:'none',transform:'none',visibility:'visible',pointerEvents:'auto',transition:'none',boxShadow:'12px 0 32px rgba(0,0,0,.38)'}}>
+    <div className="sidebar-header"><div className="sidebar-logo"><div className="sidebar-logo-icon">₿</div><span>Crypto<span style={{color:'var(--secondary)'}}>Dash</span></span></div><button className="topbar-btn topbar-btn--icon sidebar-close" style={{display:'flex',minWidth:44,minHeight:44,marginLeft:'auto',justifyContent:'center',alignItems:'center'}} onClick={()=>setSidebarOpen(false)} aria-label="Close menu">×</button></div>
+    <nav className="sidebar-nav">{Object.entries(grouped).map(([group,routes])=><div key={group} className="nav-group"><div className="nav-group-label">{groupLabels[group]||group}</div>{routes.map(r=><NavLink key={r.path} to={r.path} end onClick={()=>setSidebarOpen(false)} className={({isActive})=>isActive?'nav-item nav-item--active':'nav-item'} style={{minHeight:48,opacity:1,filter:'none',color:'#D6E1EF',touchAction:'manipulation'}}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d={icons[group]||icons.overview}/></svg><span>{r.name}</span></NavLink>)}</div>)}</nav>
+    <div className="sidebar-footer"><span className="demo-badge">SIMULATED TRADING</span></div>
+   </aside>
+  </>}
  </>;
  return <div className="layout">
   <div className="bg-orb bg-orb--1"/><div className="bg-orb bg-orb--2"/><div className="bg-orb bg-orb--3"/>
