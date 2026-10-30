@@ -1,90 +1,54 @@
-# React + Vite
+# Crypto1 — Cloudflare Workers backend
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Crypto1 uses React + Vite for its frontend and Cloudflare Workers + D1 for its backend.
 
-Currently, two official plugins are available:
+## Backend included
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Worker API routes for health, email OTP development flow, user profile, logout, demo wallet, simulated spot orders, positions and order history.
+- D1 schema for users, OTP records, sessions, demo USD wallet, crypto positions and trade history.
+- Hashed OTP storage, 5-minute OTP expiry, 60-second resend cooldown and a five-attempt limit.
+- Hashed bearer session tokens with seven-day expiry.
+- Demo BUY/SELL ledger with a 0.1% simulated fee.
+- No exchange, email, payment gateway or external market-data API is called by the Worker.
 
-## React Compiler
+## What does not work without an external provider
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Real email OTP:** an email delivery service is required to send a code to Gmail. The Worker only exposes a development OTP in local development mode; it never returns a code in production.
+- **Real deposits or withdrawals:** a payment gateway and merchant verification are required. Payment endpoints explicitly return a disabled response; the demo wallet is not real money.
+- **Real crypto execution and live prices:** an exchange/market-data integration and credentials are required. Demo trades are simulated and are not exchange orders.
 
-## Expanding the Oxlint configuration
+## Local development
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+Requirements: Node.js 20.19+ or 22.12+.
 
- 
-## Production authentication and payments setup
+1. Install dependencies: `npm install`.
+2. Sign in to Cloudflare: `npx wrangler login`.
+3. Create a D1 database: `npm run db:create`.
+4. Copy the generated database ID into `wrangler.toml`, replacing `REPLACE_WITH_CLOUDFLARE_D1_DATABASE_ID`.
+5. Apply the D1 schema: `npm run db:migrate:remote`.
+6. Create an untracked `.dev.vars` file:
+   ```
+   ENVIRONMENT=development
+   ALLOW_DEV_OTP=true
+   ```
+7. Terminal 1: `npm run worker:dev` (Worker on port 8787).
+8. Terminal 2: `npm run dev` (Vite proxies `/api/*` to the Worker).
 
-The frontend now calls same-origin Vercel serverless endpoints for email OTP and Razorpay checkout. These integrations remain disabled until the backend configuration is completed.
+The development OTP is displayed in the app only when running the Worker with `ALLOW_DEV_OTP=true` and `ENVIRONMENT=development`. Do not use that mode on a public deployment.
 
-### 1. Database
+## Production Worker deployment
 
-Create a Supabase project, open **SQL Editor**, and run the complete contents of `database/schema.sql`. The schema creates:
-- verified user profiles,
-- expiring email OTP records,
-- Razorpay payment orders,
-- an idempotent wallet-credit function.
+1. Ensure the D1 database ID is set in `wrangler.toml`.
+2. Keep `ENVIRONMENT=production` and `ALLOW_DEV_OTP=false`.
+3. Deploy with `npm run worker:deploy`.
+4. Configure `VITE_API_BASE_URL` in the frontend build environment to the deployed Worker URL, then rebuild/redeploy the frontend.
 
-Keep the Supabase service-role key on the server only. Never expose it in a `VITE_*` variable or frontend code.
+The current Vercel frontend is not automatically connected to the Worker until `VITE_API_BASE_URL` is set to the deployed Worker URL. Worker deployment and D1 creation require the repository owner to authenticate Wrangler with Cloudflare.
 
-### 2. Vercel environment variables
+## Scripts
 
-Add these variables in **Vercel → Project → Settings → Environment Variables** for Production (and Preview/Development when needed):
-
-| Variable | Purpose |
-| --- | --- |
-| `SUPABASE_URL` | Supabase project URL |
-| `SUPABASE_SERVICE_ROLE_KEY` | Server-only Supabase service role key |
-| `APP_SESSION_SECRET` | Random 32+ character secret used to sign sessions and hash OTP codes |
-| `RESEND_API_KEY` | Resend API key for sending email OTP |
-| `EMAIL_FROM` | Sender address on a domain verified in Resend |
-| `RAZORPAY_KEY_ID` | Razorpay key ID |
-| `RAZORPAY_KEY_SECRET` | Server-only Razorpay secret |
-
-After saving the variables, redeploy the project. The sender domain must be verified with Resend and Razorpay must be activated for the merchant account. OTP codes expire after five minutes and are limited to five verification attempts per issued code.
-
-### 3. Payments
-
-The Wallet page creates INR Razorpay orders server-side and credits the account only after the payment signature and captured payment status are verified server-side. Supported deposit amount is ₹100–₹5,00,000. Test with Razorpay test-mode credentials before enabling live mode.
-
-### 4. Trading mode
-
-Spot market orders and limit orders currently operate against the local simulated trading ledger. Pending limit orders and stop-loss/take-profit checks are evaluated while the browser app is open and market quotes refresh. This is not a production exchange matching engine, does not guarantee execution at a target price, and must not be used to custody or trade real crypto assets.
-
- 
-## Cloudflare Workers backend (no paid external API required for demo mode)
-
-The backend source is in `worker/index.js`; D1 schema migration is in `migrations/0001_initial.sql`. It provides health, email-OTP development flow, profile, demo wallet, demo trading orders, positions, and trade history endpoints.
-
-### What works without external API credentials
-
-- Cloudflare Worker API runtime and D1 persistence.
-- Local-only development OTP flow (the code is returned by the API response for testing).
-- User registration/login and expiring bearer sessions in D1.
-- Demo USD wallet, crypto positions, simulated buy/sell orders and history.
-- Profile read/update and session logout.
-- No exchange, mail, payment gateway, or market-data provider is called by this backend.
-
-**Security restriction:** Development OTP mode is disabled in `wrangler.toml` for production. Never enable `ALLOW_DEV_OTP` or expose development OTP responses on a public production URL. A real email OTP cannot be delivered without an email delivery service. A real payment cannot be collected without a payment provider. A real exchange order cannot be executed without an exchange integration and credentials. Demo balances are not money and simulated orders are not real trades.
-
-### Run locally
-
-1. Install Node.js (20.19+ or 22.12+) and dependencies: `npm install`.
-2. Sign in to Cloudflare from your terminal: `npx wrangler login`.
-3. Create the D1 database: `npm run db:create`.
-4. Copy the returned database ID into `wrangler.toml`, replacing `REPLACE_WITH_CLOUDFLARE_D1_DATABASE_ID`.
-5. Apply the schema: `npm run db:migrate:remote`.
-6. Create a local-only `.dev.vars` file containing:
-   `ENVIRONMENT=development`
-   `ALLOW_DEV_OTP=true`
-   `SESSION_SECRET=use-a-long-random-local-development-secret`
-7. Start the Worker: `npm run worker:dev`.
-
-Do not commit `.dev.vars`. It is excluded by `.gitignore`.
-
-### Deploy
-
-Set a strong `SESSION_SECRET` with Wrangler secrets, keep `ENVIRONMENT=production` and `ALLOW_DEV_OTP=false`, then run `npm run worker:deploy`. Set a custom Worker domain or use the assigned `workers.dev` URL. The current Vercel frontend still needs its `/api/*` requests routed to that deployed Worker URL before it uses this backend in production.
+- `npm run worker:dev` — run local Worker.
+- `npm run worker:deploy` — deploy Worker.
+- `npm run db:create` — create D1 database.
+- `npm run db:migrate:local` — apply migrations locally.
+- `npm run db:migrate:remote` — apply migrations to Cloudflare D1.
