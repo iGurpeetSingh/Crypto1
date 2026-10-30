@@ -27,7 +27,7 @@ export function AppProvider({ children }) {
   const [cash,setCash] = useState(initial.cash ?? 10000);
   const [funding,setFunding] = useState(initial.funding ?? 5000);
   const [holdings,setHoldings] = useState(initial.holdings || []);
-  const [orders,setOrders] = useState(initial.orders || []);
+  const [orders,setOrders] = useState(initial.orders || []);\n  const [pendingOrders,setPendingOrders] = useState(initial.pendingOrders || []);
   const [transactions,setTransactions] = useState(initial.transactions || []);
   const [loading,setLoading] = useState(false);
   const [marketSource,setMarketSource] = useState('Fallback demo prices');
@@ -37,9 +37,9 @@ export function AppProvider({ children }) {
   const [alerts] = useState([]);
 
   const persist = useCallback((patch) => {
-    const next = { cash, funding, holdings, orders, transactions, settings, ...patch };
+    const next = { cash, funding, holdings, orders, pendingOrders, transactions, settings, ...patch };
     save(next);
-  }, [cash,funding,holdings,orders,transactions,settings]);
+  }, [cash,funding,holdings,orders,pendingOrders,transactions,settings]);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -63,7 +63,7 @@ export function AppProvider({ children }) {
   }, []);
 
   useEffect(() => { refresh(); const timer = setInterval(refresh, 60000); return () => clearInterval(timer); }, [refresh]);
-  useEffect(() => { save({ cash, funding, holdings, orders, transactions, settings }); }, [cash, funding, holdings, orders, transactions, settings]);
+  useEffect(() => { save({ cash, funding, holdings, orders, pendingOrders, transactions, settings }); }, [cash, funding, holdings, orders, pendingOrders, transactions, settings]);
 
   const portfolio = useMemo(() => {
     const assets = holdings.map(h => ({...h}));
@@ -72,11 +72,11 @@ export function AppProvider({ children }) {
     return { totalValue: totalValue + cash, investedValue:totalValue, totalBase, totalPl:totalValue-totalBase, assets };
   },[holdings,markets,cash]);
 
-  const trade = useCallback(({side,assetId,quantity,stopLoss=0,takeProfit=0,triggerReason=''}) => {
+  const trade = useCallback(({side,assetId,quantity,stopLoss=0,takeProfit=0,triggerReason='',executionPrice=0}) => {
     const asset = markets.find(m=>m.id===assetId);
     const qty = Number(quantity);
     if (!asset || !Number.isFinite(qty) || qty <= 0) throw new Error('Select a valid asset and quantity.');
-    const price = asset.price;
+    const price = Number(executionPrice) > 0 ? Number(executionPrice) : asset.price;
     const gross = price * qty;
     const fee = gross * 0.001;
     const sl=Number(stopLoss)||0, tp=Number(takeProfit)||0;
@@ -103,6 +103,77 @@ export function AppProvider({ children }) {
     setTransactions(prev=>{const next=[{id:'TX-'+Date.now(),type:side.toUpperCase(),description:side.toUpperCase()+' '+qty+' '+asset.symbol,amount:side==='buy'?-gross:gross,createdAt:new Date().toISOString()},...prev].slice(0,100);persist({transactions:next});return next;});
     return order;
   },[markets,holdings,cash,persist]);
+
+  const placeLimitOrder = useCallback(({ side, assetId, quantity, limitPrice, stopLoss=0, takeProfit=0 }) => {
+    const asset = markets.find(m => m.id === assetId);
+    const qty = Number(quantity);
+    const limit = Number(limitPrice);
+    const normalizedSide = String(side).toLowerCase();
+    if (!asset || !['buy','sell'].includes(normalizedSide)) throw new Error('Select a valid market and order side.');
+    if (!Number.isFinite(qty) || qty <= 0 || !Number.isFinite(limit) || limit <= 0) throw new Error('Enter a valid quantity and limit price.');
+    if (normalizedSide === 'buy' && limit * qty * 1.001 > cash) throw new Error('Not enough USD balance for this limit order.');
+    if (normalizedSide === 'sell') {
+      const holding = holdings.find(h => h.id === assetId);
+      if (!holding || holding.quantity < qty) throw new Error('Insufficient ' + asset.symbol + ' balance for this limit order.');
+    }
+    if (normalizedSide === 'buy' && Number(stopLoss) > 0 && Number(stopLoss) >= limit) throw new Error('Stop-loss must be below the limit entry price.');
+    if (normalizedSide === 'buy' && Number(takeProfit) > 0 && Number(takeProfit) <= limit) throw new Error('Take-profit must be above the limit entry price.');
+    const item = {
+      id: 'LMT-' + Date.now(), side: normalizedSide.toUpperCase(), assetId,
+      name: asset.name, symbol: asset.symbol, quantity: qty, limitPrice: limit,
+      stopLoss: Number(stopLoss)||0, takeProfit: Number(takeProfit)||0,
+      status: 'OPEN', createdAt: new Date().toISOString()
+    };
+    setPendingOrders(prev => {
+      const next = [item, ...prev].slice(0, 100);
+      persist({ pendingOrders: next });
+      return next;
+    });
+    return item;
+  }, [markets, holdings, cash, persist]);
+
+  const cancelLimitOrder = useCallback((orderId) => {
+    setPendingOrders(prev => {
+      const next = prev.map(order => order.id === orderId && order.status === 'OPEN'
+        ? { ...order, status: 'CANCELLED', updatedAt: new Date().toISOString() } : order);
+      persist({ pendingOrders: next });
+      return next;
+    });
+  }, [persist]);
+
+  // Execute at most one triggered limit order per state cycle to avoid stale-balance overfills.
+  useEffect(() => {
+    const triggered = pendingOrders.find(order => {
+      if (order.status !== 'OPEN') return false;
+      const current = markets.find(m => m.id === order.assetId)?.price;
+      return current > 0 && (order.side === 'BUY' ? current <= order.limitPrice : current >= order.limitPrice);
+    });
+    if (!triggered) return;
+    const current = markets.find(m => m.id === triggered.assetId)?.price;
+    try {
+      const filled = trade({
+        side: triggered.side.toLowerCase(), assetId: triggered.assetId,
+        quantity: triggered.quantity, stopLoss: triggered.stopLoss,
+        takeProfit: triggered.takeProfit, executionPrice: current,
+        triggerReason: 'LIMIT_ORDER'
+      });
+      setPendingOrders(prev => {
+        const next = prev.map(order => order.id === triggered.id
+          ? { ...order, status: 'FILLED', filledPrice: filled.price, filledAt: new Date().toISOString(), tradeId: filled.id }
+          : order);
+        persist({ pendingOrders: next });
+        return next;
+      });
+    } catch (error) {
+      setPendingOrders(prev => {
+        const next = prev.map(order => order.id === triggered.id
+          ? { ...order, status: 'REJECTED', rejectionReason: error.message, updatedAt: new Date().toISOString() }
+          : order);
+        persist({ pendingOrders: next });
+        return next;
+      });
+    }
+  }, [markets, pendingOrders, trade, persist]);
 
   // Simulated protective exits: evaluate saved stop-loss / take-profit levels on every market update.
   useEffect(() => {
@@ -136,7 +207,7 @@ export function AppProvider({ children }) {
     setTransactions(prev=>{const next=[{id:'TX-'+Date.now(),type:type.toUpperCase(),description:'Demo '+type,amount:value,createdAt:new Date().toISOString()},...prev];persist({transactions:next});return next;});
   },[cash,persist]);
 
-  const value = { markets, portfolio, cash, balances:cash+funding, funding, holdings, orders, transactions, watchlist, alerts, settings, loading, error:null, marketSource, lastUpdated, refresh, trade, moveFunds, addDemoFunds, toasts:[], showToast:()=>{}, dismissToast:()=>{} };
+  const value = { markets, portfolio, cash, balances:cash+funding, funding, holdings, orders, pendingOrders, transactions, watchlist, alerts, settings, loading, error:null, marketSource, lastUpdated, refresh, trade, placeLimitOrder, cancelLimitOrder, moveFunds, addDemoFunds, toasts:[], showToast:()=>{}, dismissToast:()=>{} };
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }
 export function useApp(){const ctx=useContext(AppContext);if(!ctx)throw new Error('useApp must be used within AppProvider');return ctx;}
