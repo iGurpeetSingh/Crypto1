@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS sessions (
 CREATE INDEX IF NOT EXISTS sessions_expiry_idx ON sessions(expires_at);
 CREATE TABLE IF NOT EXISTS demo_wallets (
  user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
- usd_balance REAL NOT NULL DEFAULT 10000,
+ usd_balance REAL NOT NULL DEFAULT 500,
  inr_balance REAL NOT NULL DEFAULT 0,
  updated_at INTEGER NOT NULL
 );
