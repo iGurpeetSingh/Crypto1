@@ -1,13 +1,28 @@
+import { useMemo, useState } from 'react';
 import './Chart.css';
-export default function PriceChart({data=[],title='Price',height=260}){
- const points=(data||[]).filter(d=>Number.isFinite(Number(d.price)));
- if(points.length<2)return <div className="chart-empty"><p>Chart data is loading…</p></div>;
- const width=900,pad={top:18,right:18,bottom:28,left:74},innerW=width-pad.left-pad.right,innerH=height-pad.top-pad.bottom;
- const vals=points.map(d=>Number(d.price)),min=Math.min(...vals),max=Math.max(...vals),range=max-min||Math.max(max*.01,1);
- const low=min-range*.08,high=max+range*.08;
- const x=i=>pad.left+i/(points.length-1)*innerW,y=v=>pad.top+(high-v)/(high-low)*innerH;
- const path=points.map((p,i)=>(i?'L':'M')+' '+x(i)+' '+y(Number(p.price))).join(' ');
- const area=path+' L '+x(points.length-1)+' '+(pad.top+innerH)+' L '+x(0)+' '+(pad.top+innerH)+' Z';
- const up=vals.at(-1)>=vals[0],stroke=up?'#16C784':'#EA3943',id='chart-'+String(title).replace(/[^a-z0-9]/gi,'');
- return <div className="chart-container" style={{height,width:'100%'}}><div className="chart-svg-wrap" style={{width:'100%',overflow:'hidden'}}><svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={title+' price chart'} style={{width:'100%',height:'auto',display:'block'}}><defs><linearGradient id={id} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={stroke} stopOpacity=".25"/><stop offset="100%" stopColor={stroke} stopOpacity="0"/></linearGradient></defs>{[0,.25,.5,.75,1].map(f=><g key={f}><line x1={pad.left} y1={pad.top+innerH*f} x2={width-pad.right} y2={pad.top+innerH*f} stroke="currentColor" opacity=".12" strokeDasharray="4 5"/><text x={pad.left-10} y={pad.top+innerH*f+4} textAnchor="end" fontSize="12" fill="currentColor" opacity=".65">{(high-(high-low)*f).toLocaleString(undefined,{maximumFractionDigits:2})}</text></g>)}<path d={area} fill={`url(#${id})`}/><path d={path} fill="none" stroke={stroke} strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"/><circle cx={x(points.length-1)} cy={y(vals.at(-1))} r="4" fill={stroke}/></svg></div><div className="chart-legend"><span style={{color:stroke}}>●</span> {title} · {points.length} data points</div></div>;
+
+const ranges = [{label:'1H',count:12},{label:'24H',count:24},{label:'7D',count:36},{label:'ALL',count:60}];
+export default function PriceChart({data=[],title='BTC/USDT',height=360}){
+ const [range,setRange]=useState('7D');
+ const selected=ranges.find(r=>r.label===range)||ranges[2];
+ const source=(data||[]).filter(d=>Number.isFinite(Number(d.price))).slice(-selected.count);
+ const candles=useMemo(()=>source.map((point,i)=>{
+   const close=Number(point.price), prev=i?Number(source[i-1].price):close*(1-((i%2?1:-1)*.002));
+   const open=prev, spread=Math.max(close*.001,Math.abs(close-open)*.45);
+   return {open,close,high:Math.max(open,close)+spread,low:Math.min(open,close)-spread};
+ }),[source]);
+ if(candles.length<2)return <div className="trading-chart-empty">Waiting for market price history…</div>;
+ const W=1000,H=height, left=78,right=82,top=18,bottom=30,plotW=W-left-right,plotH=H-top-bottom;
+ const values=candles.flatMap(c=>[c.high,c.low]),min=Math.min(...values),max=Math.max(...values),pad=(max-min)*.08||max*.01,lo=min-pad,hi=max+pad;
+ const y=v=>top+(hi-v)/(hi-lo)*plotH, step=plotW/candles.length, bodyW=Math.max(3,Math.min(13,step*.62));
+ const fmt=v=>v>=1000?v.toLocaleString(undefined,{maximumFractionDigits:0}):v>=1?v.toFixed(2):v.toFixed(5);
+ return <section className="trading-chart">
+  <div className="trading-chart-toolbar"><div><strong>{title}/USD</strong><span className="chart-live-dot">● Market</span></div><div className="chart-range-tabs">{ranges.map(r=><button key={r.label} className={range===r.label?'active':''} onClick={()=>setRange(r.label)}>{r.label}</button>)}</div></div>
+  <div className="trading-chart-canvas"><svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={title+' candlestick price chart'} preserveAspectRatio="none">
+   {[0,.2,.4,.6,.8,1].map(f=><g key={f}><line x1={left} y1={top+plotH*f} x2={W-right} y2={top+plotH*f} stroke="currentColor" opacity=".12" strokeDasharray="3 5"/><text x={W-right+10} y={top+plotH*f+4} fontSize="12" fill="currentColor" opacity=".65">{fmt(hi-(hi-lo)*f)}</text></g>)}
+   {candles.map((c,i)=>{const cx=left+step*(i+.5),up=c.close>=c.open,color=up?'#16C784':'#EA3943',bodyY=Math.min(y(c.open),y(c.close)),bodyH=Math.max(1.5,Math.abs(y(c.open)-y(c.close)));return <g key={i}><line x1={cx} x2={cx} y1={y(c.high)} y2={y(c.low)} stroke={color} strokeWidth="1.3"/><rect x={cx-bodyW/2} y={bodyY} width={bodyW} height={bodyH} fill={color} rx=".6"/></g>})}
+   <line x1={left} x2={W-right} y1={y(candles.at(-1).close)} y2={y(candles.at(-1).close)} stroke="#F0B90B" strokeDasharray="5 4" opacity=".9"/><rect x={W-right+4} y={y(candles.at(-1).close)-10} width={74} height={20} rx="3" fill="#F0B90B"/><text x={W-right+41} y={y(candles.at(-1).close)+4} textAnchor="middle" fontSize="11" fontWeight="700" fill="#111">{fmt(candles.at(-1).close)}</text>
+   <text x={left} y={H-7} fontSize="11" fill="currentColor" opacity=".5">Older</text><text x={W-right} y={H-7} textAnchor="end" fontSize="11" fill="currentColor" opacity=".5">Latest</text>
+  </svg></div><div className="chart-footnote">Candlestick-style view · candles are estimated from available price samples, not exchange OHLC data.</div>
+ </section>;
 }
