@@ -1,6 +1,6 @@
 const json=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'no-store'}});
 const emailValid=e=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
-const randomCode=()=>String(Math.floor(100000+Math.random()*900000));
+const randomCode=()=>String(crypto.getRandomValues(new Uint32Array(1))[0]%900000+100000);
 const hex=b=>Array.from(new Uint8Array(b),x=>x.toString(16).padStart(2,'0')).join('');
 async function digest(value){return hex(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(value)));}
 async function sign(value,secret){const key=await crypto.subtle.importKey('raw',new TextEncoder().encode(secret),{name:'HMAC',hash:'SHA-256'},false,['sign']);return hex(await crypto.subtle.sign('HMAC',key,new TextEncoder().encode(value)));}
@@ -9,6 +9,7 @@ function userFromToken(req){return req.headers.get('authorization')?.replace(/^B
 async function currentUser(req,env){const token=userFromToken(req);if(!token)return null;const row=await env.DB.prepare('SELECT u.id,u.email,u.full_name,u.created_at FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.token_hash=? AND s.expires_at>?').bind(await digest(token),Date.now()).first();return row||null;}
 async function issueSession(user,env){const token=crypto.randomUUID()+'.'+crypto.randomUUID();await env.DB.prepare('INSERT INTO sessions(token_hash,user_id,expires_at,created_at) VALUES(?,?,?,?)').bind(await digest(token),user.id,Date.now()+7*86400000,Date.now()).run();return token;}
 async function route(req,env){
+ if(req.method==='OPTIONS')return new Response(null,{status:204,headers:{'Access-Control-Allow-Origin':req.headers.get('Origin')||'*','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type,Authorization','Access-Control-Max-Age':'86400'}});
  const url=new URL(req.url),path=url.pathname,method=req.method;
  if(path==='/api/health'&&method==='GET')return json({ok:true,service:'crypto1-worker',database:'D1'});
  if(path==='/api/auth/request-otp'&&method==='POST'){
@@ -61,6 +62,43 @@ async function route(req,env){
  if(path==='/api/demo/wallet'&&method==='GET'){
   const user=await currentUser(req,env);if(!user)return json({error:'Sign in required.'},401);
   const wallet=await env.DB.prepare('SELECT usd_balance,inr_balance FROM demo_wallets WHERE user_id=?').bind(user.id).first();return json({wallet});
+ }
+ if(path==='/api/trading/wallet'&&method==='GET'){
+  const user=await currentUser(req,env);if(!user)return json({error:'Sign in required.'},401);
+  const wallet=await env.DB.prepare('SELECT usd_balance,inr_balance FROM demo_wallets WHERE user_id=?').bind(user.id).first();
+  return json({wallet:{usdBalance:wallet?.usd_balance||0,inrBalance:wallet?.inr_balance||0}});
+ }
+ if(path==='/api/trading/positions'&&method==='GET'){
+  const user=await currentUser(req,env);if(!user)return json({error:'Sign in required.'},401);
+  const rows=await env.DB.prepare('SELECT symbol,quantity,avg_price AS avgPrice FROM demo_positions WHERE user_id=? AND quantity>0 ORDER BY symbol').bind(user.id).all();
+  return json({positions:rows.results||[]});
+ }
+ if(path==='/api/trading/orders'&&method==='GET'){
+  const user=await currentUser(req,env);if(!user)return json({error:'Sign in required.'},401);
+  const rows=await env.DB.prepare('SELECT id,symbol,side,quantity,price,fee,created_at AS createdAt FROM demo_trades WHERE user_id=? ORDER BY created_at DESC LIMIT 100').bind(user.id).all();
+  return json({orders:rows.results||[]});
+ }
+ if(path==='/api/trading/orders'&&method==='POST'){
+  const user=await currentUser(req,env);if(!user)return json({error:'Sign in required.'},401);
+  const b=await body(req),side=String(b.side||'').toUpperCase(),symbol=String(b.symbol||'').toUpperCase(),quantity=Number(b.quantity),price=Number(b.price);
+  if(!['BUY','SELL'].includes(side)||!/^[A-Z0-9]{2,12}$/.test(symbol)||!Number.isFinite(quantity)||quantity<=0||!Number.isFinite(price)||price<=0)return json({error:'Enter a valid market, side, quantity and execution price.'},400);
+  const fee=quantity*price*.001,total=quantity*price+(side==='BUY'?fee:-fee);
+  const wallet=await env.DB.prepare('SELECT usd_balance FROM demo_wallets WHERE user_id=?').bind(user.id).first();
+  const position=await env.DB.prepare('SELECT quantity,avg_price FROM demo_positions WHERE user_id=? AND symbol=?').bind(user.id,symbol).first();
+  if(side==='BUY'&&(!wallet||wallet.usd_balance<total))return json({error:'Insufficient demo USD balance.'},400);
+  if(side==='SELL'&&(!position||position.quantity+1e-10<quantity))return json({error:'Insufficient crypto quantity to sell.'},400);
+  const id=crypto.randomUUID(),createdAt=Date.now();
+  const statements=[
+   env.DB.prepare('INSERT INTO demo_trades(id,user_id,symbol,side,quantity,price,fee,created_at) VALUES(?,?,?,?,?,?,?,?)').bind(id,user.id,symbol,side,quantity,price,fee,createdAt),
+   side==='BUY'
+    ?env.DB.prepare('UPDATE demo_wallets SET usd_balance=usd_balance-?,updated_at=? WHERE user_id=?').bind(total,createdAt,user.id)
+    :env.DB.prepare('UPDATE demo_wallets SET usd_balance=usd_balance+?,updated_at=? WHERE user_id=?').bind(quantity*price-fee,createdAt,user.id),
+   side==='BUY'
+    ?env.DB.prepare('INSERT INTO demo_positions(user_id,symbol,quantity,avg_price) VALUES(?,?,?,?) ON CONFLICT(user_id,symbol) DO UPDATE SET avg_price=((demo_positions.quantity*demo_positions.avg_price)+(excluded.quantity*excluded.avg_price))/(demo_positions.quantity+excluded.quantity),quantity=demo_positions.quantity+excluded.quantity').bind(user.id,symbol,quantity,price)
+    :env.DB.prepare('UPDATE demo_positions SET quantity=MAX(0,quantity-?) WHERE user_id=? AND symbol=?').bind(quantity,user.id,symbol)
+  ];
+  await env.DB.batch(statements);
+  return json({success:true,order:{id,symbol,side,quantity,price,fee,status:'FILLED',createdAt}},201);
  }
  return json({error:'Not found'},404);
 }
