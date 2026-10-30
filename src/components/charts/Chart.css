@@ -91,3 +91,10 @@
 .chart-open-full{font-size:.72rem;color:#d9b64b;text-decoration:none;white-space:nowrap}
 .trading-chart-error{padding:12px;color:#e6a6a6;background:#301d25;border:1px solid #60313a;border-radius:6px;font-size:.75rem}
 .trading-chart-error a{color:#f1c85b}
+
+/* Full-height TradingView iframe: prevent the embed collapsing to its default 150px */
+.tradingview-frame-wrap{position:relative;width:100%;min-width:0;overflow:hidden;border-radius:6px;background:#131722;isolation:isolate}
+.tradingview-frame{display:block!important;width:100%!important;height:100%!important;min-height:100%!important;max-height:none!important;border:0!important;margin:0!important;padding:0!important;background:#131722}
+.tradingview-chart-shell{min-width:0;overflow:hidden}
+.tradingview-chart-shell .chart-footnote{padding:9px 2px 2px}
+@media(max-width:700px){.tradingview-frame-wrap{height:480px!important;min-height:480px!important}}
