@@ -54,7 +54,7 @@ async function route(req,env){
  if(path==='/api/profile/update'&&method==='POST'){
   const user=await currentUser(req,env);if(!user)return json({error:'Sign in required.'},401);
   const name=String((await body(req)).fullName||'').trim();if(name.length<2||name.length>80)return json({error:'Name must be 2–80 characters.'},400);
-  await env.DB.prepare('UPDATE users SET full_name=? WHERE id=?').bind(name,user.id).run();return json({success:true,name});
+  await env.DB.prepare('UPDATE users SET full_name=? WHERE id=?').bind(name,user.id).run();return json({success:true,profile:{id:user.id,email:user.email,name,createdAt:user.created_at,balanceInr:0}});
  }
  if(path==='/api/auth/logout'&&method==='POST'){
   const token=userFromToken(req);if(token)await env.DB.prepare('DELETE FROM sessions WHERE token_hash=?').bind(await digest(token)).run();return json({success:true});
