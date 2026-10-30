@@ -118,7 +118,7 @@
  .topbar-spacer{order:2}
  .topbar-market-status{display:none}
  .topbar-refresh{display:flex;order:3;padding:7px 10px;font-size:.78rem}
- .topbar-account{display:none}
+ .topbar-account{display:flex;order:4;padding:7px 9px;font-size:.76rem}
 }
 @media(max-width:420px){.topbar-refresh{font-size:0;padding:8px 10px}.topbar-refresh span{font-size:20px}}
 
