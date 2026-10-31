@@ -2,24 +2,9 @@ import {useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {createDemoSession} from '../../services/auth';
 import './CreateAccountModal.css';
+import { playWelcomeVoice } from '../../services/welcomeVoice';
 
-function playWelcomeAnnouncement(){
- if(typeof window==='undefined'||!window.speechSynthesis||!window.SpeechSynthesisUtterance) return;
- const message='Welcome to CryptoDash. Congratulations, your demo trading account is ready. CryptoDash is a virtual demo trading platform created for learning and practice. You can explore the markets and place simulated trades using virtual funds. No real money is invested and no real trades are executed. Enjoy your demo trading experience.';
- const speak=()=>{
-  const voices=window.speechSynthesis.getVoices();
-  const femaleVoice=voices.find(v=>/female|zira|samantha|aria|jenny|sara|heera|priya|kavya/i.test(v.name))
-   ||voices.find(v=>/^en-IN/i.test(v.lang))
-   ||voices.find(v=>/^en/i.test(v.lang));
-  const utterance=new window.SpeechSynthesisUtterance(message);
-  utterance.lang='en-IN'; utterance.rate=0.92; utterance.pitch=1.18; utterance.volume=1;
-  if(femaleVoice) utterance.voice=femaleVoice;
-  window.speechSynthesis.cancel();
-  window.speechSynthesis.speak(utterance);
- };
- // Invoke immediately inside the account-creation click gesture so browsers allow playback.
- speak();
-}
+
 
 export default function CreateAccountModal(){
  const [name,setName]=useState('');
@@ -39,7 +24,7 @@ export default function CreateAccountModal(){
    createDemoSession({name:name.trim(),email:cleanEmail,phone:phone.trim()});
    // Speech starts directly from the account-creation click, satisfying browser
    // autoplay rules. Client-side navigation keeps the announcement playing.
-   playWelcomeAnnouncement();
+   playWelcomeVoice();
    navigate('/dashboard',{replace:true});
   }catch(err){setError(err.message||'Could not create demo account.');}
   finally{setBusy(false);}
