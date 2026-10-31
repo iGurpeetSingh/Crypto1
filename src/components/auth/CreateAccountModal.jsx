@@ -6,7 +6,10 @@ import './CreateAccountModal.css';
 function playWelcomeAnnouncement(){
  if(typeof window==='undefined'||!('speechSynthesis' in window)||!('SpeechSynthesisUtterance' in window)) return;
  const message='Welcome to CryptoDash. Congratulations! Your demo trading account is ready. CryptoDash is a demo platform made for learning and practicing cryptocurrency trading with virtual funds. No real investment or real-money trading takes place here. Enjoy your demo trading journey.';
+ let hasSpoken=false;
  const speak=()=>{
+  if(hasSpoken) return;
+  hasSpoken=true;
   const voices=window.speechSynthesis.getVoices();
   const femaleVoice=voices.find(voice=>/female|zira|samantha|aria|jenny|sara|heera|priya|kavya|google.*english.*female/i.test(voice.name))
    ||voices.find(voice=>/^en-IN/i.test(voice.lang))
