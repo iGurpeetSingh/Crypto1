@@ -140,3 +140,7 @@
 .topbar-main-nav a.active{color:#fff;border-bottom-color:#168cff}
 .topbar-global .topbar-spacer{flex:1}
 @media(max-width:760px){.topbar-global{height:58px;padding:0 10px;gap:10px}.topbar-main-nav{gap:12px;overflow-x:auto;scrollbar-width:none}.topbar-main-nav::-webkit-scrollbar{display:none}.topbar-main-nav a{font-size:11px}.topbar-global .topbar-market-status,.topbar-global .topbar-refresh{display:none!important}.topbar-global .topbar-account{padding:7px 9px;font-size:11px}}
+
+/* No drawer or hamburger in the permanent top-navigation layout */
+.topbar-global .mobile-menu-toggle{display:none!important}
+.topbar-global{position:sticky;top:0;left:0;right:0;width:100%;flex-shrink:0}
