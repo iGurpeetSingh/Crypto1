@@ -1,15 +1,15 @@
-const MESSAGE = 'Welcome to CryptoDash. Congratulations, your demo trading account is ready. CryptoDash is a virtual demo trading platform created for learning and practice. You can explore the markets and place simulated trades using virtual funds. No real money is invested and no real trades are executed. Enjoy your demo trading experience.';
+const MESSAGE = 'क्रिप्टो डैश में आपका स्वागत है। बधाई हो! आपका डेमो ट्रेडिंग अकाउंट तैयार है। यह प्लेटफॉर्म केवल सीखने और अभ्यास के लिए बनाया गया है। यहाँ आप वर्चुअल पैसों से मार्केट देख सकते हैं और डेमो ट्रेड लगा सकते हैं। इसमें कोई असली पैसा निवेश नहीं होता और कोई वास्तविक ट्रेड नहीं की जाती। आपकी डेमो ट्रेडिंग यात्रा के लिए शुभकामनाएँ।';
 
-// Browser voice lists can load after the page starts. Prefer explicitly feminine
-// voices; do not select the first English voice because it is often masculine.
-const FEMALE_VOICE = /zira|samantha|aria|jenny|sara|heera|priya|kavya|female|woman|google us english|google uk english| microsoft.*(jenny|aria|zira)/i;
-const ENGLISH_VOICE = /^en(-|_)/i;
+// Hindi voice selection: prefer known feminine Hindi voices when the browser
+// exposes one. The browser/OS voice catalogue determines which voices exist.
+const FEMALE_VOICE = /kalpana|swara|aditi|heera|priya|kavya|female|woman|google.*hindi.*(female|woman)/i;
+const HINDI_VOICE = /^(hi|hi-in)([-_]|$)/i;
 
-function chooseFemaleVoice(voices) {
-  const feminine = voices.filter(voice => FEMALE_VOICE.test(voice.name));
-  return feminine.find(voice => /^en[-_]IN/i.test(voice.lang))
-    || feminine.find(voice => ENGLISH_VOICE.test(voice.lang))
-    || feminine[0]
+function chooseHindiFemaleVoice(voices) {
+  const hindiVoices = voices.filter(voice => HINDI_VOICE.test(voice.lang));
+  return hindiVoices.find(voice => FEMALE_VOICE.test(voice.name))
+    || hindiVoices.find(voice => /google/i.test(voice.name))
+    || hindiVoices[0]
     || null;
 }
 
@@ -25,35 +25,22 @@ export function playWelcomeVoice() {
     const speak = () => {
       const utterance = new SpeechSynthesisUtterance(MESSAGE);
       const voices = synth.getVoices();
-      const femaleVoice = chooseFemaleVoice(voices);
+      const hindiVoice = chooseHindiFemaleVoice(voices);
 
-      if (femaleVoice) {
-        utterance.voice = femaleVoice;
-        utterance.lang = femaleVoice.lang || 'en-IN';
-      } else {
-        // Browser/OS exposes no identifiable feminine voice. Use a higher,
-        // softer English voice profile as the best available fallback.
-        const englishVoice = voices.find(voice => ENGLISH_VOICE.test(voice.lang));
-        if (englishVoice) {
-          utterance.voice = englishVoice;
-          utterance.lang = englishVoice.lang;
-        } else {
-          utterance.lang = 'en-IN';
-        }
-      }
-
-      utterance.rate = 0.92;
-      utterance.pitch = femaleVoice ? 1.18 : 1.38;
+      utterance.lang = hindiVoice?.lang || 'hi-IN';
+      if (hindiVoice) utterance.voice = hindiVoice;
+      // A higher pitch is a fallback only; a genuinely feminine voice must
+      // be installed/enabled in the browser or operating system.
+      utterance.rate = 0.88;
+      utterance.pitch = 1.32;
       utterance.volume = 1;
-      utterance.onerror = event => console.warn('CryptoDash welcome speech error:', event.error);
+      utterance.onerror = event => console.warn('CryptoDash Hindi welcome speech error:', event.error);
       synth.speak(utterance);
     };
 
-    const availableVoices = synth.getVoices();
-    if (availableVoices.length) {
+    if (synth.getVoices().length) {
       speak();
     } else {
-      // Some Chromium browsers populate voices asynchronously.
       const onVoicesChanged = () => {
         synth.removeEventListener?.('voiceschanged', onVoicesChanged);
         speak();
@@ -62,11 +49,11 @@ export function playWelcomeVoice() {
       window.setTimeout(() => {
         synth.removeEventListener?.('voiceschanged', onVoicesChanged);
         if (!synth.speaking && !synth.pending) speak();
-      }, 1000);
+      }, 1200);
     }
     return true;
   } catch (error) {
-    console.error('CryptoDash welcome voice failed:', error);
+    console.error('CryptoDash Hindi welcome voice failed:', error);
     return false;
   }
 }
