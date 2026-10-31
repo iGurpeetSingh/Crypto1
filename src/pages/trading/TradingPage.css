@@ -214,3 +214,49 @@
  .binance-terminal .terminal-order-entry{grid-column:1/-1;grid-row:2}
  .binance-terminal .terminal-right{grid-column:2;grid-row:2}
 }
+
+
+/* Reference-matched desktop terminal: chart / order book / order ticket */
+@media (min-width:1101px){
+ .binance-terminal .terminal-workspace{
+   display:grid!important;
+   grid-template-columns:minmax(0,1fr) 280px 320px!important;
+   grid-template-rows:minmax(500px,auto) auto!important;
+   gap:10px!important;
+   align-items:stretch;
+ }
+ .binance-terminal .terminal-center,
+ .binance-terminal .terminal-right{display:contents!important}
+ .binance-terminal .terminal-chart-panel{grid-column:1!important;grid-row:1!important;min-width:0}
+ .binance-terminal .terminal-book{grid-column:2!important;grid-row:1!important;min-width:0;max-height:100%;overflow:hidden}
+ .binance-terminal .terminal-order-entry{grid-column:3!important;grid-row:1!important;min-width:0;align-self:stretch}
+ .binance-terminal .terminal-right>.terminal-panel:first-child{grid-column:2!important;grid-row:2!important;min-width:0}
+ .binance-terminal .terminal-right .terminal-wallet-mini{display:none!important}
+ .binance-terminal .terminal-chart-panel .tradingview-frame-wrap{height:540px!important;min-height:540px!important}
+ .binance-terminal .terminal-chart-panel .tradingview-frame{height:100%!important;width:100%!important}
+ .binance-terminal .terminal-order-grid{grid-template-columns:minmax(0,1fr)!important}
+ .binance-terminal .terminal-protection{border-left:0!important;border-top:1px solid #2c333e;padding:12px 0 0!important}
+ .binance-terminal .terminal-book .book-row{padding:5px 2px}
+ .binance-terminal .terminal-tape{max-height:240px}
+}
+@media (min-width:1400px){
+ .binance-terminal .terminal-workspace{grid-template-columns:minmax(0,1fr) 285px 325px!important}
+}
+@media (min-width:701px) and (max-width:1100px){
+ .binance-terminal .terminal-workspace{display:grid!important;grid-template-columns:minmax(0,1fr) 260px!important}
+ .binance-terminal .terminal-center{display:contents!important}
+ .binance-terminal .terminal-right{display:contents!important}
+ .binance-terminal .terminal-chart-panel{grid-column:1!important;grid-row:1!important}
+ .binance-terminal .terminal-book{grid-column:2!important;grid-row:1!important}
+ .binance-terminal .terminal-order-entry{grid-column:1!important;grid-row:2!important}
+ .binance-terminal .terminal-right>.terminal-panel:first-child{grid-column:2!important;grid-row:2!important}
+}
+@media (max-width:700px){
+ .binance-terminal .terminal-workspace{display:flex!important;flex-direction:column!important}
+ .binance-terminal .terminal-center{display:contents!important}
+ .binance-terminal .terminal-right{display:contents!important}
+ .binance-terminal .terminal-chart-panel{order:0!important}
+ .binance-terminal .terminal-order-entry{order:1!important}
+ .binance-terminal .terminal-book{order:2!important}
+ .binance-terminal .terminal-right>.terminal-panel:first-child{order:3!important}
+}
