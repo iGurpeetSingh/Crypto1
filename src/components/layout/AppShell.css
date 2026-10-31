@@ -278,3 +278,10 @@
   .sidebar-close { z-index: 4; pointer-events: auto; }
   .main { position: relative; z-index: 1; margin-left: 0 !important; width: 100%; }
 }
+
+/* Global no-sidebar navigation: every route uses the top navigation only */
+.layout.no-sidebar{display:block!important;width:100%!important;min-height:100vh!important;overflow-x:hidden!important}
+.layout.no-sidebar>.main,.layout.no-sidebar>.main-trading{display:flex!important;flex-direction:column!important;width:100%!important;max-width:100%!important;margin:0!important;padding:0!important;min-width:0!important}
+.layout.no-sidebar .content{width:100%!important;max-width:none!important;min-width:0!important;margin:0!important}
+.layout.no-sidebar .desktop-sidebar,.layout.no-sidebar .mobile-sidebar,.layout.no-sidebar .sidebar-backdrop{display:none!important}
+.layout.no-sidebar .main-trading{margin:0!important;width:100%!important}
