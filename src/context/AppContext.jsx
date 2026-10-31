@@ -18,12 +18,21 @@ function save(data) {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (e) { console.warn('Could not save demo account', e); }
 }
 const savedState = readSaved();
-const initial = savedState ? {
+const initial = savedState?.walletVersion === 2 ? {
   ...savedState,
-  cash: savedState.orders?.length || savedState.holdings?.length || savedState.transactions?.length ? savedState.cash : 500,
-  funding: savedState.orders?.length || savedState.holdings?.length || savedState.transactions?.length ? (savedState.funding ?? 0) : 0
+  cash: Number.isFinite(Number(savedState.cash)) ? Number(savedState.cash) : 500,
+  funding: 0
+} : savedState ? {
+  ...savedState,
+  cash: 500,
+  funding: 0,
+  holdings: [],
+  orders: [],
+  pendingOrders: [],
+  transactions: [],
+  walletVersion: 2
 } : {
-  cash: 500, funding: 0, holdings: [], orders: [], transactions: [],
+  cash: 500, funding: 0, holdings: [], orders: [], transactions: [], walletVersion: 2,
   settings: { theme: 'pink-glass', accent: '#FF5CA8', currency: 'USD', locale: 'en-US', tableDensity: 'normal' }
 };
 
@@ -69,7 +78,7 @@ export function AppProvider({ children }) {
   }, []);
 
   useEffect(() => { refresh(); const timer = setInterval(refresh, 60000); return () => clearInterval(timer); }, [refresh]);
-  useEffect(() => { save({ cash, funding, holdings, orders, pendingOrders, transactions, settings }); }, [cash, funding, holdings, orders, pendingOrders, transactions, settings]);
+  useEffect(() => { save({ cash, funding: 0, holdings, orders, pendingOrders, transactions, settings, walletVersion: 2 }); }, [cash, funding, holdings, orders, pendingOrders, transactions, settings]);
 
   const portfolio = useMemo(() => {
     const assets = holdings.map(h => ({...h}));
