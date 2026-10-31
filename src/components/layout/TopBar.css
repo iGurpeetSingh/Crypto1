@@ -188,3 +188,30 @@ header.topbar.topbar-global > nav.topbar-main-nav a:hover { color: #27c5ff !impo
   header.topbar.topbar-global > nav.topbar-main-nav::-webkit-scrollbar { display: none !important; }
   header.topbar.topbar-global > nav.topbar-main-nav a { font-size: 11px !important; padding: 0 3px !important; }
 }
+
+
+/* CryptoDash primary navigation: always visible, no sidebar dependency */
+header.topbar.topbar-global {
+  display:flex!important; width:100%!important; min-width:0!important;
+  justify-content:flex-start!important; flex-wrap:nowrap!important;
+}
+header.topbar.topbar-global > .topbar-brand { flex:0 0 auto!important; }
+header.topbar.topbar-global > .topbar-main-nav {
+  display:flex!important; flex:0 1 auto!important; min-width:0!important;
+  visibility:visible!important; opacity:1!important; overflow:visible!important;
+  gap:clamp(14px,2vw,30px)!important;
+}
+header.topbar.topbar-global > .topbar-main-nav a {
+  display:flex!important; flex:0 0 auto!important; color:#c4d2e2!important;
+  padding:0 4px!important; white-space:nowrap!important;
+}
+header.topbar.topbar-global > .topbar-main-nav a.active { color:#fff!important; border-bottom:2px solid #168cff!important; }
+header.topbar.topbar-global > .topbar-spacer { flex:1 1 auto!important; min-width:8px!important; }
+@media(max-width:760px) {
+ header.topbar.topbar-global { gap:10px!important; padding-inline:10px!important; }
+ header.topbar.topbar-global > .topbar-main-nav {
+  flex:1 1 auto!important; min-width:0!important; overflow-x:auto!important;
+  justify-content:flex-start!important; gap:12px!important;
+ }
+ header.topbar.topbar-global > .topbar-main-nav a { font-size:11px!important; }
+}
