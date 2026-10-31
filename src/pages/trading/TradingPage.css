@@ -183,3 +183,34 @@
 .performance-legend i.level-trade{background:#bd741d}.performance-legend i.level-profit{background:#16a978}.performance-legend i.level-loss{background:#d64d5d}
 .performance-legend small{margin-left:auto}
 @media(max-width:700px){.performance-metrics{grid-template-columns:1fr}.performance-heading{align-items:flex-start;flex-direction:column}.performance-legend small{width:100%;margin:4px 0 0}}
+
+
+/* Exchange terminal layout: chart | order book | buy/sell ticket */
+@media (min-width:1101px){
+ .binance-terminal .terminal-workspace{
+   display:grid;
+   grid-template-columns:minmax(0,2.55fr) minmax(205px,.78fr) minmax(270px,.92fr);
+   grid-template-rows:auto auto;
+   gap:10px;
+   align-items:stretch;
+ }
+ .binance-terminal .terminal-center{display:contents}
+ .binance-terminal .terminal-chart-panel{grid-column:1;grid-row:1;min-width:0}
+ .binance-terminal .terminal-book{grid-column:2;grid-row:1;padding:12px 9px;min-width:0}
+ .binance-terminal .terminal-order-entry{grid-column:3;grid-row:1;min-width:0;padding:12px}
+ .binance-terminal .terminal-order-grid{grid-template-columns:minmax(0,1fr)}
+ .binance-terminal .terminal-protection{border-left:0;border-top:1px solid #2c333e;padding:10px 0 0}
+ .binance-terminal .terminal-right{grid-column:2;grid-row:2;display:block;min-width:0}
+ .binance-terminal .terminal-right>.terminal-panel:first-child{margin-bottom:10px}
+ .binance-terminal .terminal-right .terminal-wallet-mini{display:none}
+ .binance-terminal .terminal-chart-panel .tradingview-frame-wrap{height:520px!important;min-height:520px!important}
+ .binance-terminal .terminal-chart-panel .tradingview-frame{height:100%!important}
+}
+@media (min-width:701px) and (max-width:1100px){
+ .binance-terminal .terminal-workspace{grid-template-columns:minmax(0,2fr) minmax(230px,1fr)}
+ .binance-terminal .terminal-center{display:contents}
+ .binance-terminal .terminal-chart-panel{grid-column:1;grid-row:1}
+ .binance-terminal .terminal-book{grid-column:2;grid-row:1}
+ .binance-terminal .terminal-order-entry{grid-column:1/-1;grid-row:2}
+ .binance-terminal .terminal-right{grid-column:2;grid-row:2}
+}
