@@ -111,7 +111,13 @@ export default function TradingPage() {
   };
 
   return <div className="page-content binance-terminal">
-    <div className="terminal-market-head">
+    <header className="exchange-topnav">
+      <a className="exchange-brand" href="/dashboard"><span>₿</span>Crypto<strong>Dash</strong></a>
+      <nav><a href="/markets">Markets</a><a className="active" href="/trading">Trade</a><a href="/wallet">Wallet</a></nav>
+      <div className="exchange-nav-actions"><span className="exchange-search">⌕ <span>Search coin, pair, or keyword...</span></span><a className="exchange-deposit" href="/wallet">↗ Deposit</a><a href="/account" aria-label="Account">◎</a><span className="exchange-avatar">●</span></div>
+    </header>
+    <div className="exchange-ticker-strip">{markets.slice(0,7).map(m=><div className="exchange-ticker" key={m.id}><b>{m.symbol}/USDT</b><span>{money(m.price, m.price<1?4:2)}</span><em className={(m.change24||0)>=0?'positive':'negative'}>{(m.change24||0)>=0?'+':''}{money(m.change24||0)}%</em></div>)}</div>
+    <div className="terminal-market-head exchange-market-head">
       <div className="terminal-pair">
         <select aria-label="Trading market" value={assetId} onChange={e => { setAssetId(e.target.value); setLimitPrice(''); }}>
           {markets.map(m => <option key={m.id} value={m.id}>{m.symbol}/USDT · {m.name}</option>)}
@@ -119,6 +125,9 @@ export default function TradingPage() {
         <div className="terminal-price-line"><strong>${money(price)}</strong><span className={(asset?.change24 || 0) >= 0 ? 'positive' : 'negative'}>{(asset?.change24 || 0) >= 0 ? '+' : ''}{money(asset?.change24 || 0)}%</span></div>
         <small>{asset?.name} · {pair}</small>
       </div>
+      <div className="terminal-stat"><small>24h Change</small><b className={(asset?.change24||0)>=0?'positive':'negative'}>{(asset?.change24||0)>=0?'+':''}{money(asset?.change24||0)}%</b></div>
+      <div className="terminal-stat"><small>24h High</small><b>${money(asset?.high24 || price)}</b></div>
+      <div className="terminal-stat"><small>24h Low</small><b>${money(asset?.low24 || price)}</b></div>
       <div className="terminal-stat"><small>24h Volume</small><b>${money(asset?.volume24 || 0, 0)}</b></div>
       <div className="terminal-status"><i />{feedState}</div>
     </div>
@@ -180,7 +189,7 @@ export default function TradingPage() {
       </aside>
     </div>
 
-    <section className="terminal-panel terminal-performance">
+    <section className="terminal-panel terminal-performance exchange-performance-hidden">
       <div className="performance-heading"><div><b>Trading Performance</b><small>Daily estimated trade P/L and trade count · last 52 weeks</small></div><span>{orders.length} total trades</span></div>
       <div className="performance-metrics">
         <div><small>Today's P/L</small><strong className={todayPl >= 0 ? 'positive' : 'negative'}>{signedMoney(todayPl)}</strong><em>{today.count} trades · {signedMoney(today.realized)} closed</em></div>
