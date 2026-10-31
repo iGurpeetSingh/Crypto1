@@ -1,46 +1,69 @@
-import {useEffect,useState} from 'react';
-import {Link} from 'react-router-dom';
+import {useMemo,useState} from 'react';
+import {Link,useNavigate} from 'react-router-dom';
 import {useApp} from '../../context/AppContext';
 import {getStoredProfile,logout} from '../../services/auth';
-import {useNavigate} from 'react-router-dom';
 import {GlassCard} from '../../components/common/GlassCard';
 import './ProfilePage.css';
 
 const money=value=>Number(value||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const signed=value=>(Number(value)>=0?'+':'−')+'$'+money(Math.abs(Number(value||0)));
+const dateKey=value=>{const d=new Date(value);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
 export default function ProfilePage(){
- const {cash,holdings,orders,pendingOrders,portfolio}=useApp();
+ const {orders,markets}=useApp();
  const [profile]=useState(()=>getStoredProfile());
  const navigate=useNavigate();
- const filled=orders.filter(order=>order.status==='FILLED'||!order.status);
+ const daily=useMemo(()=>{
+  const map={};
+  orders.forEach(order=>{
+   const key=dateKey(order.createdAt);
+   if(!map[key])map[key]={count:0,realized:0,buy:0,sell:0};
+   map[key].count+=1;
+   map[key].realized+=Number(order.realizedPnl||0);
+   if(order.type==='BUY')map[key].buy+=1;
+   if(order.type==='SELL')map[key].sell+=1;
+  });
+  return map;
+ },[orders]);
+ const todayKey=dateKey(new Date());
+ const today=daily[todayKey]||{count:0,realized:0,buy:0,sell:0};
+ const days=useMemo(()=>{
+  const end=new Date();end.setHours(0,0,0,0);
+  const start=new Date(end);start.setDate(start.getDate()-363);start.setDate(start.getDate()-((start.getDay()+6)%7));
+  return Array.from({length:364},(_,i)=>{const d=new Date(start);d.setDate(start.getDate()+i);const key=dateKey(d);return {key,...(daily[key]||{count:0,realized:0,buy:0,sell:0})};});
+ },[daily]);
+ const sortedDays=Object.entries(daily).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,14);
  const name=profile?.name||profile?.fullName||'Demo Trader';
  const email=profile?.email||'Email not connected';
- const positions=holdings.filter(item=>Number(item.quantity)>0);
+ const phone=profile?.phone||'Mobile number not provided';
+ const totalRealized=orders.reduce((sum,o)=>sum+Number(o.realizedPnl||0),0);
+ const totalTrades=orders.length;
  return <div className="page-content crypto-profile-page">
-  <GlassCard className="page-header"><h1>Profile</h1><p className="page-subtitle">Your demo trading account and activity</p></GlassCard>
+  <GlassCard className="page-header"><h1>My Profile</h1><p className="page-subtitle">Your demo account identity and daily trading performance</p></GlassCard>
   <section className="crypto-profile-identity">
    <div className="crypto-profile-avatar">{String(name).trim().charAt(0).toUpperCase()||'D'}</div>
-   <div className="crypto-profile-id"><h2>{name}</h2><p>{email}</p><span>● Demo trading account · {profile?.phone||'No mobile number'}</span></div>
+   <div className="crypto-profile-id"><h2>{name}</h2><p>{email}</p><span>● Demo account · {phone}</span></div>
    <button className="crypto-profile-logout" onClick={()=>{logout();navigate('/dashboard',{replace:true});window.location.reload();}}>Logout</button>
   </section>
-  <div className="grid grid-3 crypto-profile-stats">
-   <GlassCard><span>Available demo balance</span><strong>$ {money(cash)}</strong><small>USD available to place orders</small></GlassCard>
-   <GlassCard><span>Total filled trades</span><strong>{filled.length}</strong><small>Completed demo buy and sell orders</small></GlassCard>
-   <GlassCard><span>Open positions</span><strong>{positions.length}</strong><small>Crypto assets currently held</small></GlassCard>
-  </div>
-  <div className="grid grid-3 crypto-profile-stats crypto-profile-pnl">
-   <GlassCard><span>Unrealized Profit / Loss</span><strong className={Number(portfolio.unrealizedPl||0)>=0?'positive':'negative'}>{Number(portfolio.unrealizedPl||0)>=0?'+':'−'}$ {money(Math.abs(portfolio.unrealizedPl||0))}</strong><small>Based on current market price</small></GlassCard>
-   <GlassCard><span>Realized Profit / Loss</span><strong className={Number(portfolio.realizedPl||0)>=0?'positive':'negative'}>{Number(portfolio.realizedPl||0)>=0?'+':'−'}$ {money(Math.abs(portfolio.realizedPl||0))}</strong><small>Completed sell orders</small></GlassCard>
-   <GlassCard><span>Total Profit / Loss</span><strong className={Number(portfolio.totalProfitLoss||0)>=0?'positive':'negative'}>{Number(portfolio.totalProfitLoss||0)>=0?'+':'−'}$ {money(Math.abs(portfolio.totalProfitLoss||0))}</strong><small>Realized + unrealized P/L</small></GlassCard>
-  </div>
-  <GlassCard className="crypto-profile-portfolio">
-   <div className="crypto-profile-section-head"><div><h3>Demo portfolio</h3><p>Current simulated holdings</p></div><Link to="/trading">Go to trading →</Link></div>
-   {positions.length? <div className="crypto-profile-table"><div className="crypto-profile-row crypto-profile-table-head"><span>Asset</span><span>Quantity</span><span>Average buy price</span></div>{positions.map(item=><div className="crypto-profile-row" key={item.id}><b>{item.name} ({item.symbol})</b><span>{Number(item.quantity).toFixed(6)}</span><span>$ {money(item.avgBuyPrice)}</span></div>)}</div>:<div className="crypto-profile-empty">No trades yet. Your crypto holdings will appear here after your first demo buy.</div>}
+  <section className="profile-daily-section">
+   <div className="profile-daily-heading"><div><h2>Today's Trading P/L</h2><p>Profit and loss from completed demo sell trades today</p></div><span className="profile-today-date">{new Date().toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'short',year:'numeric'})}</span></div>
+   <div className="profile-daily-cards">
+    <GlassCard><span>Today's Realized P/L</span><strong className={today.realized>=0?'positive':'negative'}>{signed(today.realized)}</strong><small>Only completed sell trades</small></GlassCard>
+    <GlassCard><span>Trades Today</span><strong>{today.count}</strong><small>{today.buy} buys · {today.sell} sells</small></GlassCard>
+    <GlassCard><span>All-time Realized P/L</span><strong className={totalRealized>=0?'positive':'negative'}>{signed(totalRealized)}</strong><small>{totalTrades} recorded orders</small></GlassCard>
+   </div>
+  </section>
+  <GlassCard className="profile-activity-card">
+   <div className="profile-daily-heading"><div><h3>Daily Trading Activity</h3><p>Each square represents one day. Hover to inspect trades and realized P/L.</p></div><span className="profile-activity-total">{totalTrades} total trades</span></div>
+   <div className="profile-calendar-wrap">
+    <div className="profile-calendar-months"><span>Nov</span><span>Dec</span><span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span><span>Jul</span><span>Aug</span><span>Sep</span><span>Oct</span></div>
+    <div className="profile-calendar-grid">{days.map((day,i)=><span key={day.key} className={'profile-calendar-cell '+(day.count===0?'level-0':day.realized>0?'level-profit':day.realized<0?'level-loss':'level-trade')} style={{gridColumn:Math.floor(i/7)+1,gridRow:i%7+1}} title={day.key+' · '+day.count+' trades · '+signed(day.realized)}/>)}</div>
+   </div>
+   <div className="profile-calendar-legend"><span>Less</span><i className="level-0"/><i className="level-trade"/><i className="level-profit"/><i className="level-loss"/><span>More activity</span></div>
   </GlassCard>
-  <GlassCard className="crypto-profile-portfolio">
-   <div className="crypto-profile-section-head"><div><h3>Recent trading activity</h3><p>Your demo orders only</p></div><Link to="/trading">Trade crypto →</Link></div>
-   {filled.length?<div className="crypto-profile-table"><div className="crypto-profile-row crypto-profile-table-head"><span>Market</span><span>Side</span><span>Order value</span></div>{filled.slice(0,8).map(order=><div className="crypto-profile-row" key={order.id}><b>{order.symbol}/USDT</b><span className={order.type==='BUY'?'positive':'negative'}>{order.type}</span><span className={Number(order.realizedPnl||0)>=0?'positive':'negative'}>$ {money(order.total||order.price*order.quantity)} · P/L {Number(order.realizedPnl||0)>=0?'+':'−'}${money(Math.abs(order.realizedPnl||0))}</span></div>)}</div>:<div className="crypto-profile-empty">No demo trades placed yet. Your completed buy and sell orders will show here.</div>}
-   {pendingOrders.filter(order=>order.status==='OPEN').length>0&&<p className="crypto-profile-pending">{pendingOrders.filter(order=>order.status==='OPEN').length} open limit order(s) pending</p>}
+  <GlassCard className="profile-daily-log">
+   <div className="profile-daily-heading"><div><h3>Day-wise Profit / Loss</h3><p>Daily realized results from your demo trading history</p></div><Link to="/trading">Open Spot Trading →</Link></div>
+   {sortedDays.length?<div className="profile-day-table"><div className="profile-day-row profile-day-head"><span>Date</span><span>Trades</span><span>Buy / Sell</span><span>Profit / Loss</span></div>{sortedDays.map(([key,value])=><div className="profile-day-row" key={key}><b>{new Date(key+'T12:00:00').toLocaleDateString(undefined,{day:'2-digit',month:'short',year:'numeric'})}</b><span>{value.count}</span><span>{value.buy} / {value.sell}</span><strong className={value.realized>=0?'positive':'negative'}>{signed(value.realized)}</strong></div>)}</div>:<div className="crypto-profile-empty">No trades recorded yet. Once you place demo trades, daily profit/loss and trade counts will appear here.</div>}
   </GlassCard>
-  <p className="crypto-profile-note">Demo profile stored in this browser. Funds are virtual; orders do not execute on a real exchange.</p>
+  <p className="crypto-profile-note">Demo profile details are saved in this browser. Daily P/L shown here is realized profit/loss from completed sell orders; open-position P/L remains in Wallet.</p>
  </div>;
 }
