@@ -2,6 +2,7 @@ import {useNavigate} from 'react-router-dom';
 import {NavLink} from 'react-router-dom';
 import {useApp} from '../../context/AppContext';
 import './TopBar.css';
+import { playWelcomeVoice } from '../../services/welcomeVoice';
 export default function TopBar(){
  const navigate=useNavigate();const {refresh,marketSource}=useApp();
  return <header className="topbar topbar-global">
@@ -11,6 +12,6 @@ export default function TopBar(){
   </nav>
   <div className="topbar-spacer"/>
   <span className="topbar-market-status">{marketSource?.toLowerCase().includes('live')?'● LIVE MARKET':'● DEMO MARKET'}</span>
-  <button className="topbar-btn topbar-refresh" onClick={refresh}><span aria-hidden="true">↻</span> Refresh</button>
+  <button className="topbar-btn topbar-voice" onClick={playWelcomeVoice} title="Play welcome voice" aria-label="Play welcome voice">🔊 Welcome</button>\n  <button className="topbar-btn topbar-refresh" onClick={refresh}><span aria-hidden="true">↻</span> Refresh</button>
  </header>;
 }
