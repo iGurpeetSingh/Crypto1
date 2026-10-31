@@ -334,3 +334,29 @@
 .quick-action--block .quick-action-desc {
   font-size: 0.8rem;
 }
+
+/* PERMANENT SIDEBAR REMOVAL — navigation lives only in the top bar */
+html body #root .permanent-no-sidebar,
+html body #root .layout.no-sidebar{display:block!important;width:100%!important;max-width:100%!important;min-height:100vh!important;margin:0!important;padding:0!important;overflow-x:hidden!important}
+html body #root .permanent-no-sidebar .sidebar,
+html body #root .permanent-no-sidebar .desktop-sidebar,
+html body #root .permanent-no-sidebar .mobile-sidebar,
+html body #root .permanent-no-sidebar [class*="sidebar"],
+html body #root .permanent-no-sidebar .sidebar-backdrop{display:none!important;visibility:hidden!important;pointer-events:none!important;width:0!important;max-width:0!important;transform:translateX(-110%)!important}
+html body #root .permanent-no-sidebar .main,
+html body #root .permanent-no-sidebar .main-trading,
+html body #root .permanent-no-sidebar .permanent-fullwidth{display:flex!important;flex-direction:column!important;position:relative!important;width:100%!important;max-width:100%!important;min-width:0!important;height:auto!important;margin:0!important;padding:0!important;left:0!important;right:0!important}
+html body #root .permanent-no-sidebar .content,
+html body #root .permanent-no-sidebar .permanent-content{flex:1 1 auto!important;width:100%!important;max-width:none!important;min-width:0!important;margin:0!important;padding:clamp(12px,1.4vw,24px)!important}
+html body #root .permanent-no-sidebar .topbar-global{width:100%!important;max-width:100%!important;margin:0!important}
+html body #root .permanent-no-sidebar .mobile-menu-toggle,
+html body #root .permanent-no-sidebar .sidebar-toggle,
+html body #root .permanent-no-sidebar [aria-label*="navigation"]{display:none!important}
+html body{overflow-x:hidden!important}
+@media(min-width:769px){
+ html body #root .permanent-no-sidebar .main{margin-left:0!important;width:100%!important}
+}
+@media(max-width:768px){
+ html body #root .permanent-no-sidebar .content{padding:10px!important}
+ html body #root .permanent-no-sidebar .topbar-main-nav{flex:1 1 auto;min-width:0}
+}
