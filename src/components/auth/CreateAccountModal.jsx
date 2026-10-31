@@ -3,6 +3,31 @@ import {useNavigate} from 'react-router-dom';
 import {createDemoSession} from '../../services/auth';
 import './CreateAccountModal.css';
 
+function playWelcomeAnnouncement(){
+ if(typeof window==='undefined'||!('speechSynthesis' in window)||!('SpeechSynthesisUtterance' in window)) return;
+ const message='Welcome to CryptoDash. Congratulations! Your demo trading account is ready. CryptoDash is a demo platform made for learning and practicing cryptocurrency trading with virtual funds. No real investment or real-money trading takes place here. Enjoy your demo trading journey.';
+ const speak=()=>{
+  const voices=window.speechSynthesis.getVoices();
+  const femaleVoice=voices.find(voice=>/female|zira|samantha|aria|jenny|sara|heera|priya|kavya|google.*english.*female/i.test(voice.name))
+   ||voices.find(voice=>/^en-IN/i.test(voice.lang))
+   ||voices.find(voice=>/^en/i.test(voice.lang));
+  const utterance=new SpeechSynthesisUtterance(message);
+  utterance.lang='en-IN';
+  utterance.rate=0.94;
+  utterance.pitch=1.12;
+  utterance.volume=1;
+  if(femaleVoice) utterance.voice=femaleVoice;
+  window.speechSynthesis.cancel();
+  window.speechSynthesis.speak(utterance);
+ };
+ if(window.speechSynthesis.getVoices().length){speak();}
+ else{
+  window.speechSynthesis.addEventListener('voiceschanged',speak,{once:true});
+  // Some browsers do not fire voiceschanged when the voice list is empty.
+  window.setTimeout(speak,250);
+ }
+}
+
 export default function CreateAccountModal(){
  const [name,setName]=useState('');
  const [email,setEmail]=useState('');
@@ -13,13 +38,16 @@ export default function CreateAccountModal(){
  const submit=event=>{
   event.preventDefault();setError('');
   const cleanEmail=email.trim().toLowerCase();
-  if(!/^[^\s@]+@gmail\.com$/.test(cleanEmail)){setError('Please enter a valid Gmail address ending in @gmail.com.');return;}
-  if(!/^\+?[0-9\s()-]{8,18}$/.test(phone.trim())){setError('Please enter a valid mobile number.');return;}
+  if(!/^[^\\s@]+@gmail\\.com$/.test(cleanEmail)){setError('Please enter a valid Gmail address ending in @gmail.com.');return;}
+  if(!/^\\+?[0-9\\s()-]{8,18}$/.test(phone.trim())){setError('Please enter a valid mobile number.');return;}
+  if(name.trim().length<2){setError('Please enter your full name.');return;}
   setBusy(true);
   try{
    createDemoSession({name:name.trim(),email:cleanEmail,phone:phone.trim()});
+   // Speech starts directly from the account-creation click, satisfying browser
+   // autoplay rules. Client-side navigation keeps the announcement playing.
+   playWelcomeAnnouncement();
    navigate('/dashboard',{replace:true});
-   window.location.reload();
   }catch(err){setError(err.message||'Could not create demo account.');}
   finally{setBusy(false);}
  };
