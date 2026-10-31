@@ -1,2 +1,33 @@
 .crypto-profile-page{display:grid;gap:16px}.crypto-profile-identity{display:flex;align-items:center;gap:16px;padding:20px;background:#151d2a;border:1px solid #2b3544;border-radius:12px}.crypto-profile-avatar{width:58px;height:58px;flex:0 0 58px;display:grid;place-items:center;border-radius:50%;background:linear-gradient(135deg,#2563eb,#0891b2);font-size:1.35rem;font-weight:800;color:white}.crypto-profile-id{min-width:0;flex:1}.crypto-profile-id h2{margin:0 0 5px;font-size:1.1rem}.crypto-profile-id p{margin:0 0 5px;color:#aab7c8;overflow-wrap:anywhere}.crypto-profile-id span{font-size:.72rem;color:#16c784}.crypto-profile-stats{gap:12px}.crypto-profile-stats .glass-card{display:grid;gap:8px}.crypto-profile-stats span,.crypto-profile-stats small{color:#94a3b8;font-size:.76rem}.crypto-profile-stats strong{font-size:1.55rem;color:#f8fafc;font-variant-numeric:tabular-nums}.crypto-profile-section-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}.crypto-profile-section-head h3{margin:0 0 4px}.crypto-profile-section-head p{margin:0;color:#94a3b8;font-size:.78rem}.crypto-profile-section-head a{color:#67c7e8;text-decoration:none;font-size:.78rem;white-space:nowrap}.crypto-profile-table{width:100%;overflow:auto}.crypto-profile-row{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:12px;min-width:440px;padding:12px 8px;border-top:1px solid #2a3442;font-size:.8rem}.crypto-profile-row span{color:#c4cedb}.crypto-profile-table-head{color:#8291a5;font-size:.7rem;border-top:0}.crypto-profile-empty{padding:22px 8px;text-align:center;color:#91a0b3;font-size:.82rem}.crypto-profile-pending,.crypto-profile-note{color:#8998aa;font-size:.74rem}.crypto-profile-note{margin:0}@media(max-width:600px){.crypto-profile-identity{padding:14px;gap:10px;flex-wrap:wrap}.crypto-profile-avatar{width:46px;height:46px;flex-basis:46px}.crypto-profile-id h2{font-size:1rem}.crypto-profile-identity>.btn{width:100%;text-align:center}.crypto-profile-stats{grid-template-columns:1fr!important;gap:0!important}.crypto-profile-stats>.glass-card{border-radius:0!important;border-left:0!important;border-right:0!important}.crypto-profile-section-head{align-items:flex-start}.crypto-profile-row{min-width:390px}}
 .crypto-profile-verified{font-size:.7rem;color:#4adea5;border:1px solid rgba(74,222,165,.25);border-radius:30px;padding:7px 10px;white-space:nowrap}.crypto-profile-pnl .positive{color:#36d99b}.crypto-profile-pnl .negative{color:#fb7185}
+
+.crypto-profile-page{display:grid;gap:16px}
+.crypto-profile-logout{border:1px solid #334155;background:#101b2a;color:#e2e8f0;border-radius:8px;padding:9px 14px;cursor:pointer}
+.profile-daily-section,.profile-activity-card,.profile-daily-log{min-width:0}
+.profile-daily-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:14px}
+.profile-daily-heading h2,.profile-daily-heading h3{margin:0 0 5px;color:#eef4fc}
+.profile-daily-heading p{margin:0;color:#91a1b5;font-size:.78rem}
+.profile-today-date,.profile-activity-total{color:#9eb0c4;font-size:.75rem;white-space:nowrap}
+.profile-daily-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.profile-daily-cards .glass-card{display:grid;gap:8px}
+.profile-daily-cards span,.profile-daily-cards small{font-size:.75rem;color:#93a4b8}
+.profile-daily-cards strong{font-size:1.55rem;font-variant-numeric:tabular-nums;color:#eef4fc}
+.profile-daily-cards .positive,.profile-day-row .positive{color:#20d69a}
+.profile-daily-cards .negative,.profile-day-row .negative{color:#fb7185}
+.profile-calendar-wrap{overflow-x:auto;padding:6px 2px 12px}
+.profile-calendar-months{display:grid;grid-template-columns:repeat(12,1fr);min-width:620px;margin:0 0 8px 22px;color:#aab8c9;font-size:.68rem}
+.profile-calendar-grid{display:grid;grid-template-rows:repeat(7,11px);grid-auto-columns:11px;grid-auto-flow:column;gap:4px;min-width:max-content}
+.profile-calendar-cell{width:11px;height:11px;border-radius:2px;background:#1b2532}
+.profile-calendar-cell.level-trade{background:#64748b}
+.profile-calendar-cell.level-profit{background:#10b981}
+.profile-calendar-cell.level-loss{background:#f97316}
+.profile-calendar-legend{display:flex;align-items:center;justify-content:flex-end;gap:6px;color:#8999ac;font-size:.68rem}
+.profile-calendar-legend i{width:10px;height:10px;border-radius:2px;background:#1b2532}
+.profile-calendar-legend i.level-trade{background:#64748b}.profile-calendar-legend i.level-profit{background:#10b981}.profile-calendar-legend i.level-loss{background:#f97316}
+.profile-daily-log .profile-daily-heading a{color:#65c7ec;text-decoration:none;font-size:.78rem;white-space:nowrap}
+.profile-day-table{overflow-x:auto}
+.profile-day-row{display:grid;grid-template-columns:1.3fr .6fr .8fr 1fr;gap:10px;min-width:420px;padding:12px 8px;border-top:1px solid #293648;font-size:.8rem;align-items:center}
+.profile-day-head{border:0;color:#8798ad;font-size:.7rem}
+.profile-day-row span{color:#b9c6d6}
+.profile-day-row strong{text-align:right}
+@media(max-width:650px){.profile-daily-cards{grid-template-columns:1fr}.profile-daily-heading{flex-direction:column}.profile-day-row{min-width:380px}.crypto-profile-identity{align-items:flex-start}.crypto-profile-logout{margin-left:auto}}
