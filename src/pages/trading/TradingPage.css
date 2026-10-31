@@ -161,3 +161,25 @@
  .binance-terminal .terminal-chart-panel .chart-footnote{display:none!important}
  .binance-terminal .terminal-chart-panel .trading-chart-error{margin:10px}
 }
+
+.terminal-performance{margin-top:12px;padding:16px}
+.performance-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;color:#e7edf5}
+.performance-heading>div{display:grid;gap:4px}
+.performance-heading small,.performance-heading>span{color:#8591a1;font-size:.68rem}
+.performance-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:16px 0}
+.performance-metrics>div{display:grid;gap:5px;padding:12px;background:#1a2029;border:1px solid #2b333f;border-radius:7px}
+.performance-metrics small,.performance-metrics em{font-size:.66rem;color:#8c98a8;font-style:normal}
+.performance-metrics strong{font-size:1.2rem;font-variant-numeric:tabular-nums}
+.positive{color:#16c784!important}.negative{color:#f05b69!important}
+.activity-calendar-wrap{display:grid;grid-template-columns:30px minmax(0,1fr);gap:8px;align-items:start;overflow-x:auto;padding:8px 0}
+.activity-weekdays{height:82px;display:flex;flex-direction:column;justify-content:space-around;color:#8994a3;font-size:.62rem}
+.activity-calendar{display:grid;grid-template-columns:repeat(52,minmax(7px,1fr));grid-template-rows:repeat(7,10px);grid-auto-flow:column;gap:3px;min-width:430px}
+.activity-cell{width:100%;height:10px;border-radius:2px;background:#202731;border:1px solid #29323e}
+.activity-cell.level-trade{background:#bd741d;border-color:#bd741d}
+.activity-cell.level-profit{background:#16a978;border-color:#16a978}
+.activity-cell.level-loss{background:#d64d5d;border-color:#d64d5d}
+.performance-legend{display:flex;align-items:center;gap:6px;color:#8994a3;font-size:.62rem;flex-wrap:wrap}
+.performance-legend i{width:10px;height:10px;border-radius:2px;background:#202731}
+.performance-legend i.level-trade{background:#bd741d}.performance-legend i.level-profit{background:#16a978}.performance-legend i.level-loss{background:#d64d5d}
+.performance-legend small{margin-left:auto}
+@media(max-width:700px){.performance-metrics{grid-template-columns:1fr}.performance-heading{align-items:flex-start;flex-direction:column}.performance-legend small{width:100%;margin:4px 0 0}}
