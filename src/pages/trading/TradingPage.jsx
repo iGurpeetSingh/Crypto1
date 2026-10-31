@@ -44,12 +44,16 @@ export default function TradingPage() {
       if (!map[key]) map[key] = { count: 0, realized: 0 };
       map[key].count += 1;
       map[key].realized += Number(order.realizedPnl || 0);
+      if (order.type === 'BUY') {
+        const currentPrice = Number(markets.find(m => m.id === order.assetId)?.price || order.price);
+        map[key].realized += (currentPrice - Number(order.price)) * Number(order.quantity);
+      }
     });
     return map;
-  }, [orders]);
+  }, [orders, markets]);
   const today = dailyMap[dayKey(new Date())] || { count: 0, realized: 0 };
   const liveOpenPl = Number(portfolio?.unrealizedPl || 0);
-  const todayPl = today.realized + liveOpenPl;
+  const todayPl = today.realized;
   const totalRealized = orders.reduce((sum, order) => sum + Number(order.realizedPnl || 0), 0);
   const activityDays = useMemo(() => {
     const end = new Date(); end.setHours(0, 0, 0, 0);
@@ -177,7 +181,7 @@ export default function TradingPage() {
     </div>
 
     <section className="terminal-panel terminal-performance">
-      <div className="performance-heading"><div><b>Trading Performance</b><small>Daily profit, loss and trade count · last 52 weeks</small></div><span>{orders.length} total trades</span></div>
+      <div className="performance-heading"><div><b>Trading Performance</b><small>Daily estimated trade P/L and trade count · last 52 weeks</small></div><span>{orders.length} total trades</span></div>
       <div className="performance-metrics">
         <div><small>Today's P/L</small><strong className={todayPl >= 0 ? 'positive' : 'negative'}>{signedMoney(todayPl)}</strong><em>{today.count} trades · {signedMoney(today.realized)} closed</em></div>
         <div><small>Total realized P/L</small><strong className={totalRealized >= 0 ? 'positive' : 'negative'}>{signedMoney(totalRealized)}</strong><em>Completed sell trades</em></div>
@@ -189,7 +193,7 @@ export default function TradingPage() {
           {activityDays.map((day, i) => <span key={day.key} className={'activity-cell ' + (day.count === 0 ? 'level-0' : day.realized > 0 ? 'level-profit' : day.realized < 0 ? 'level-loss' : 'level-trade')} style={{ gridColumn: Math.floor(i / 7) + 1, gridRow: i % 7 + 1 }} title={day.key + ' · ' + day.count + ' trades · realized P/L ' + signedMoney(day.realized)} />)}
         </div>
       </div>
-      <div className="performance-legend"><span>Less</span><i className="level-0" /><i className="level-trade" /><i className="level-profit" /><i className="level-loss" /><span>More activity / P&L</span><small>Hover over a day to see its trade count and closed P/L.</small></div>
+      <div className="performance-legend"><span>Less</span><i className="level-0" /><i className="level-trade" /><i className="level-profit" /><i className="level-loss" /><span>More activity / P&L</span><small>Hover over a day to see trade count and estimated P/L.</small></div>
     </section>
 
     <section className="terminal-panel terminal-history">
