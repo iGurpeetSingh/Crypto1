@@ -12,6 +12,5 @@ export default function TopBar(){
   <div className="topbar-spacer"/>
   <span className="topbar-market-status">{marketSource?.toLowerCase().includes('live')?'● LIVE MARKET':'● DEMO MARKET'}</span>
   <button className="topbar-btn topbar-refresh" onClick={refresh}><span aria-hidden="true">↻</span> Refresh</button>
-  <button className="topbar-btn topbar-account" onClick={()=>navigate('/account')}>Account</button>
  </header>;
 }
