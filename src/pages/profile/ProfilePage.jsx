@@ -1,27 +1,16 @@
 import {useEffect,useState} from 'react';
 import {Link} from 'react-router-dom';
 import {useApp} from '../../context/AppContext';
-import {apiUrl} from '../../services/api';
-import {getSessionToken,getStoredProfile,saveStoredProfile} from '../../services/auth';
+import {getStoredProfile,logout} from '../../services/auth';
+import {useNavigate} from 'react-router-dom';
 import {GlassCard} from '../../components/common/GlassCard';
 import './ProfilePage.css';
 
 const money=value=>Number(value||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
 export default function ProfilePage(){
  const {cash,holdings,orders,pendingOrders,portfolio}=useApp();
- const [profile,setProfile]=useState(()=>getStoredProfile());
- const [loading,setLoading]=useState(false);
- useEffect(()=>{
-  const token=getSessionToken();
-  if(!token)return;
-  let active=true;setLoading(true);
-  fetch(apiUrl('/api/profile/me'),{headers:{Authorization:'Bearer '+token}})
-   .then(async response=>{const data=await response.json().catch(()=>({}));if(!response.ok)throw new Error(data.error||'Profile unavailable');return data.profile;})
-   .then(data=>{if(active&&data){setProfile(data);saveStoredProfile(data);}})
-   .catch(()=>{})
-   .finally(()=>{if(active)setLoading(false);});
-  return()=>{active=false;};
- },[]);
+ const [profile]=useState(()=>getStoredProfile());
+ const navigate=useNavigate();
  const filled=orders.filter(order=>order.status==='FILLED'||!order.status);
  const name=profile?.name||profile?.fullName||'Demo Trader';
  const email=profile?.email||'Email not connected';
@@ -30,8 +19,8 @@ export default function ProfilePage(){
   <GlassCard className="page-header"><h1>Profile</h1><p className="page-subtitle">Your demo trading account and activity</p></GlassCard>
   <section className="crypto-profile-identity">
    <div className="crypto-profile-avatar">{String(name).trim().charAt(0).toUpperCase()||'D'}</div>
-   <div className="crypto-profile-id"><h2>{name}</h2><p>{email}</p><span>● Demo trading account</span></div>
-   <span className="crypto-profile-verified">Verified email</span>
+   <div className="crypto-profile-id"><h2>{name}</h2><p>{email}</p><span>● Demo trading account · {profile?.phone||'No mobile number'}</span></div>
+   <button className="crypto-profile-logout" onClick={()=>{logout();navigate('/dashboard',{replace:true});window.location.reload();}}>Logout</button>
   </section>
   <div className="grid grid-3 crypto-profile-stats">
    <GlassCard><span>Available demo balance</span><strong>$ {money(cash)}</strong><small>USD available to place orders</small></GlassCard>
@@ -52,6 +41,6 @@ export default function ProfilePage(){
    {filled.length?<div className="crypto-profile-table"><div className="crypto-profile-row crypto-profile-table-head"><span>Market</span><span>Side</span><span>Order value</span></div>{filled.slice(0,8).map(order=><div className="crypto-profile-row" key={order.id}><b>{order.symbol}/USDT</b><span className={order.type==='BUY'?'positive':'negative'}>{order.type}</span><span className={Number(order.realizedPnl||0)>=0?'positive':'negative'}>$ {money(order.total||order.price*order.quantity)} · P/L {Number(order.realizedPnl||0)>=0?'+':'−'}${money(Math.abs(order.realizedPnl||0))}</span></div>)}</div>:<div className="crypto-profile-empty">No demo trades placed yet. Your completed buy and sell orders will show here.</div>}
    {pendingOrders.filter(order=>order.status==='OPEN').length>0&&<p className="crypto-profile-pending">{pendingOrders.filter(order=>order.status==='OPEN').length} open limit order(s) pending</p>}
   </GlassCard>
-  <p className="crypto-profile-note">{loading?'Refreshing account details…':'Demo funds are virtual. Orders do not execute on a real exchange.'}</p>
+  <p className="crypto-profile-note">Demo profile stored in this browser. Funds are virtual; orders do not execute on a real exchange.</p>
  </div>;
 }
