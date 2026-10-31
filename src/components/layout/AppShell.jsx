@@ -20,7 +20,7 @@ const essential=[
  {path:'/dashboard',name:'Dashboard',group:'overview'},
  {path:'/markets',name:'Markets',group:'markets'},
  {path:'/trading',name:'Spot Trading',group:'trading'},
- {path:'/wallet',name:'Wallet',group:'wallet'}
+ {path:'/wallet',name:'Wallet',group:'wallet'},\n {path:'/account',name:'Profile',group:'wallet'}
 ];
 
 function Navigation({onNavigate,showClose=false}){
