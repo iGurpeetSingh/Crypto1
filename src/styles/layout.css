@@ -350,8 +350,10 @@ html body #root .permanent-no-sidebar .content,
 html body #root .permanent-no-sidebar .permanent-content{flex:1 1 auto!important;width:100%!important;max-width:none!important;min-width:0!important;margin:0!important;padding:clamp(12px,1.4vw,24px)!important}
 html body #root .permanent-no-sidebar .topbar-global{width:100%!important;max-width:100%!important;margin:0!important}
 html body #root .permanent-no-sidebar .mobile-menu-toggle,
-html body #root .permanent-no-sidebar .sidebar-toggle,
-html body #root .permanent-no-sidebar [aria-label*="navigation"]{display:none!important}
+html body #root .permanent-no-sidebar .sidebar-toggle{display:none!important}
+html body #root .permanent-no-sidebar nav.topbar-main-nav{display:flex!important;visibility:visible!important;opacity:1!important;position:static!important;flex:0 1 auto!important;min-width:0!important;align-items:center!important;gap:clamp(12px,1.7vw,28px)!important}
+html body #root .permanent-no-sidebar nav.topbar-main-nav a{display:inline-flex!important;visibility:visible!important;opacity:1!important;white-space:nowrap!important;color:#c4d2e2!important;padding:0 5px!important;min-height:100%!important;align-items:center!important;text-decoration:none!important}
+html body #root .permanent-no-sidebar nav.topbar-main-nav a.active{color:#fff!important;border-bottom:2px solid #168cff!important}
 html body{overflow-x:hidden!important}
 @media(min-width:769px){
  html body #root .permanent-no-sidebar .main{margin-left:0!important;width:100%!important}
