@@ -111,11 +111,6 @@ export default function TradingPage() {
   };
 
   return <div className="page-content binance-terminal">
-    <header className="exchange-topnav">
-      <a className="exchange-brand" href="/dashboard"><span>₿</span>Crypto<strong>Dash</strong></a>
-      <nav><a href="/markets">Markets</a><a className="active" href="/trading">Trade</a><a href="/wallet">Wallet</a></nav>
-      <div className="exchange-nav-actions"><span className="exchange-search">⌕ <span>Search coin, pair, or keyword...</span></span><a className="exchange-deposit" href="/wallet">↗ Deposit</a><a href="/account" aria-label="Account">◎</a><span className="exchange-avatar">●</span></div>
-    </header>
     <div className="exchange-ticker-strip">{markets.slice(0,7).map(m=><div className="exchange-ticker" key={m.id}><b>{m.symbol}/USDT</b><span>{money(m.price, m.price<1?4:2)}</span><em className={(m.change24||0)>=0?'positive':'negative'}>{(m.change24||0)>=0?'+':''}{money(m.change24||0)}%</em></div>)}</div>
     <div className="terminal-market-head exchange-market-head">
       <div className="terminal-pair">
