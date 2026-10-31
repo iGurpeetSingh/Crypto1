@@ -12,6 +12,7 @@ export default function TopBar(){
   </nav>
   <div className="topbar-spacer"/>
   <span className="topbar-market-status">{marketSource?.toLowerCase().includes('live')?'● LIVE MARKET':'● DEMO MARKET'}</span>
-  <button className="topbar-btn topbar-voice" onClick={playWelcomeVoice} title="Play welcome voice" aria-label="Play welcome voice">🔊 Welcome</button>\n  <button className="topbar-btn topbar-refresh" onClick={refresh}><span aria-hidden="true">↻</span> Refresh</button>
+  <button className="topbar-btn topbar-voice" onClick={playWelcomeVoice} title="Play welcome voice" aria-label="Play welcome voice">🔊 Welcome</button>
+  <button className="topbar-btn topbar-refresh" onClick={refresh}><span aria-hidden="true">↻</span> Refresh</button>
  </header>;
 }
