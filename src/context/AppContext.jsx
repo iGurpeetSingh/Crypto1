@@ -26,10 +26,6 @@ const initial = savedState?.walletVersion === 2 ? {
   ...savedState,
   cash: 500,
   funding: 0,
-  holdings: [],
-  orders: [],
-  pendingOrders: [],
-  transactions: [],
   walletVersion: 2
 } : {
   cash: 500, funding: 0, holdings: [], orders: [], transactions: [], walletVersion: 2,
