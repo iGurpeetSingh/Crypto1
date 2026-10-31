@@ -28,6 +28,13 @@ export function createDemoSession({name,email,phone}){
  return profile;
 }
 export function getSessionToken(){return localStorage.getItem(SESSION_KEY)||'';}
+export function hasDemoSession(){
+ try {
+  const token=getSessionToken();
+  const profile=getStoredProfile();
+  return Boolean(token && token.startsWith('demo-session-') && profile && profile.email && profile.name);
+ } catch { return false; }
+}
 export function getStoredProfile(){
  try{return JSON.parse(localStorage.getItem(USER_KEY)||'null')}catch{return null;}
 }
