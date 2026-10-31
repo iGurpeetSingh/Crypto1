@@ -215,3 +215,7 @@ header.topbar.topbar-global > .topbar-spacer { flex:1 1 auto!important; min-widt
  }
  header.topbar.topbar-global > .topbar-main-nav a { font-size:11px!important; }
 }
+
+
+.topbar-global .topbar-voice{display:flex!important;align-items:center;gap:6px;white-space:nowrap;background:rgba(20,184,166,.12);border-color:rgba(45,212,191,.3);color:#5eead4;padding:8px 11px}
+@media(max-width:760px){.topbar-global .topbar-voice{display:flex!important;padding:7px 8px;font-size:10px}.topbar-global .topbar-refresh{display:none!important}}
