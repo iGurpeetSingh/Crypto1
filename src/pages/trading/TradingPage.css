@@ -260,3 +260,90 @@
  .binance-terminal .terminal-book{order:2!important}
  .binance-terminal .terminal-right>.terminal-panel:first-child{order:3!important}
 }
+
+
+/* === Full-width Phemex-inspired spot terminal === */
+.main-trading{margin-left:0!important;width:100%!important;min-height:100vh;background:#070d16!important}
+.main-trading>.content{padding:0!important;margin:0!important;width:100%!important;max-width:none!important}
+.binance-terminal{width:100%!important;max-width:none!important;margin:0!important;padding:0 12px 14px!important;background:#070d16;color:#e8edf5}
+.exchange-topnav{height:62px;display:flex;align-items:center;gap:34px;padding:0 8px;border-bottom:1px solid #1d2a39;background:#07101b;color:#dce6f3}
+.exchange-brand{display:flex;align-items:center;gap:8px;color:#f5f8fc;text-decoration:none;font-size:19px;font-weight:800;white-space:nowrap}
+.exchange-brand>span{display:grid;place-items:center;width:32px;height:32px;border-radius:9px;background:#087de0;color:#fff;font-size:21px}
+.exchange-brand strong{color:#13c8d4}
+.exchange-topnav nav{height:100%;display:flex;align-items:center;gap:26px}
+.exchange-topnav nav a,.exchange-nav-actions>a{height:100%;display:flex;align-items:center;color:#d5deea;text-decoration:none;font-size:13px;font-weight:600;white-space:nowrap}
+.exchange-topnav nav a.active{color:#fff;border-bottom:2px solid #1789ff}
+.exchange-nav-actions{margin-left:auto;display:flex;align-items:center;gap:18px}
+.exchange-search{height:36px;width:235px;display:flex;align-items:center;gap:9px;padding:0 12px;border:1px solid #203247;border-radius:9px;color:#8da0b6;font-size:20px}
+.exchange-search span{font-size:11px}
+.exchange-deposit{height:34px!important;padding:0 16px;border-radius:8px;background:#1769ed;color:#fff!important}
+.exchange-avatar{width:26px;height:26px;display:grid;place-items:center;border:1px solid #52647b;border-radius:50%;color:#dbe6f2;font-size:11px}
+.exchange-ticker-strip{height:49px;display:flex;align-items:center;gap:9px;overflow:hidden;border-bottom:1px solid #1d2a39}
+.exchange-ticker{height:34px;display:flex;align-items:center;gap:7px;padding:0 11px;border:1px solid #1b3445;border-radius:8px;white-space:nowrap;font-size:11px}
+.exchange-ticker b{color:#dbe7f5}.exchange-ticker span{color:#bdc9d8;font-variant-numeric:tabular-nums}.exchange-ticker em{font-style:normal;font-size:10px}
+.exchange-market-head{min-height:74px;margin:0!important;padding:12px 4px!important;display:grid!important;grid-template-columns:minmax(210px,1.2fr) repeat(5,minmax(95px,.65fr))!important;gap:14px!important;border:0!important;border-radius:0!important;border-bottom:1px solid #1d2a39!important;background:transparent!important}
+.exchange-market-head .terminal-pair select{font-size:19px;font-weight:800}
+.exchange-market-head .terminal-price-line strong{font-size:21px}
+.exchange-market-head .terminal-stat{gap:4px}
+.exchange-market-head .terminal-stat small{font-size:10px;color:#8395aa}
+.exchange-market-head .terminal-stat b{font-size:12px}
+.exchange-market-head .terminal-status{font-size:10px;justify-content:flex-start}
+.binance-terminal .terminal-workspace{display:grid!important;grid-template-columns:minmax(0,1fr) 282px 322px!important;grid-template-rows:minmax(560px,auto)!important;gap:10px!important;align-items:stretch!important;margin-top:10px}
+.binance-terminal .terminal-center,.binance-terminal .terminal-right{display:contents!important}
+.binance-terminal .terminal-chart-panel{grid-column:1!important;grid-row:1!important;min-width:0;padding:0!important;border:1px solid #1d3145!important;border-radius:10px!important;background:#07111e!important;box-shadow:none!important;overflow:hidden!important}
+.binance-terminal .terminal-chart-title{display:none!important}
+.binance-terminal .terminal-chart-panel .tradingview-chart-shell{padding:0!important;margin:0!important;background:#070e18!important}
+.binance-terminal .terminal-chart-panel .trading-chart-toolbar{display:flex!important;padding:8px 12px!important;background:#091523;border-bottom:1px solid #1b2b3c}
+.binance-terminal .terminal-chart-panel .chart-symbol-info strong{color:#dce7f4}
+.binance-terminal .terminal-chart-panel .tradingview-frame-wrap{height:560px!important;min-height:560px!important;border:0!important;border-radius:0!important}
+.binance-terminal .terminal-chart-panel .tradingview-frame{width:100%!important;height:100%!important;border:0!important}
+.binance-terminal .terminal-chart-panel .chart-footnote{padding:5px 10px!important;background:#081321;color:#71869d}
+.binance-terminal .terminal-book{grid-column:2!important;grid-row:1!important;min-width:0;padding:12px 10px!important;border:1px solid #1d3145!important;border-radius:10px!important;background:#091421!important;overflow:hidden}
+.binance-terminal .terminal-book .terminal-panel-title{border-bottom:1px solid #203145}
+.binance-terminal .book-labels,.binance-terminal .book-row{grid-template-columns:1fr 1fr 1fr!important;font-size:10px!important}
+.binance-terminal .book-labels span:last-child:after{content:'Total';}
+.binance-terminal .book-mid-price{border-color:#203145!important}
+.binance-terminal .book-mid-price b{font-size:19px!important;color:#04d6a0!important}
+.binance-terminal .terminal-order-entry{grid-column:3!important;grid-row:1!important;min-width:0;padding:12px!important;border:1px solid #1d3145!important;border-radius:10px!important;background:#091421!important}
+.binance-terminal .terminal-order-heading{display:flex;flex-wrap:wrap;gap:10px!important}
+.binance-terminal .terminal-order-heading>b{width:100%;font-size:15px!important}
+.binance-terminal .terminal-order-grid{display:block!important;padding-top:12px!important}
+.binance-terminal .terminal-order-form{gap:13px!important}
+.binance-terminal .terminal-order-tabs{grid-template-columns:1fr 1fr!important}
+.binance-terminal .terminal-order-tabs button{padding:12px!important;border-radius:8px!important}
+.binance-terminal .terminal-type-tabs{gap:22px!important}
+.binance-terminal .terminal-order-form input,.binance-terminal .terminal-protection input{min-height:43px;background:#0e1c2b!important;border-color:#243a50!important}
+.binance-terminal .terminal-percent button{padding:8px 2px!important}
+.binance-terminal .terminal-submit{min-height:44px;border-radius:8px!important;font-size:14px}
+.binance-terminal .terminal-protection{margin-top:12px;padding:12px 0 0!important;border-top:1px solid #203145!important;border-left:0!important}
+.binance-terminal .terminal-right{display:none!important}
+.binance-terminal .exchange-performance-hidden{display:none!important}
+.binance-terminal .terminal-history{margin-top:12px!important;border:1px solid #1d3145!important;border-radius:10px!important;background:#091421!important}
+.binance-terminal .terminal-history-tabs{min-height:48px;border-bottom:1px solid #243448}
+.binance-terminal .terminal-history-tabs button{font-size:13px!important}
+.binance-terminal .terminal-table-scroll th{background:#0e1a28!important;color:#8fa4ba!important}
+.binance-terminal .terminal-table-scroll td{border-color:#1d2b3b!important}
+@media(max-width:1200px){
+ .binance-terminal .terminal-workspace{grid-template-columns:minmax(0,1fr) 245px!important;grid-template-rows:auto auto!important}
+ .binance-terminal .terminal-chart-panel{grid-column:1!important;grid-row:1!important}
+ .binance-terminal .terminal-book{grid-column:2!important;grid-row:1!important}
+ .binance-terminal .terminal-order-entry{grid-column:1/-1!important;grid-row:2!important}
+ .binance-terminal .terminal-chart-panel .tradingview-frame-wrap{height:500px!important;min-height:500px!important}
+}
+@media(max-width:760px){
+ .binance-terminal{padding:0 8px 12px!important}
+ .exchange-topnav{height:56px;gap:12px;padding:0 4px}
+ .exchange-topnav nav{gap:12px}
+ .exchange-topnav nav a{font-size:11px}
+ .exchange-search{display:none}
+ .exchange-nav-actions{gap:10px}
+ .exchange-ticker-strip{overflow-x:auto}
+ .exchange-market-head{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ .exchange-market-head .terminal-pair{grid-column:1/-1}
+ .exchange-market-head .terminal-status{grid-column:1/-1}
+ .binance-terminal .terminal-workspace{display:flex!important;flex-direction:column!important}
+ .binance-terminal .terminal-chart-panel{order:0!important}
+ .binance-terminal .terminal-book{order:1!important}
+ .binance-terminal .terminal-order-entry{order:2!important}
+ .binance-terminal .terminal-chart-panel .tradingview-frame-wrap{height:420px!important;min-height:420px!important}
+}
