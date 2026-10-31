@@ -81,10 +81,10 @@ export default function AppShell(){
  return <div className={`layout ${desktopOpen?'desktop-sidebar-open':'desktop-sidebar-collapsed'}`}>
   {!hasDemoSession()&&<CreateAccountModal/>}
   <div className="bg-orb bg-orb--1"/><div className="bg-orb bg-orb--2"/><div className="bg-orb bg-orb--3"/>
-  <aside className="sidebar desktop-sidebar" aria-label="Main navigation">
+  {location.pathname.startsWith('/trading') ? null : <aside className="sidebar desktop-sidebar" aria-label="Main navigation">
    <Navigation/>
-  </aside>
-  <main className="main"><TopBar onMenuClick={handleMenuClick} menuOpen={isMobile?mobileOpen:desktopOpen}/><div className="content"><Outlet/></div></main>
+  </aside>}
+  <main className={`main ${location.pathname.startsWith('/trading')?'main-trading':''}`}>{!location.pathname.startsWith('/trading')&&<TopBar onMenuClick={handleMenuClick} menuOpen={isMobile?mobileOpen:desktopOpen}/>}<div className="content"><Outlet/></div></main>
   {typeof document!=='undefined'&&createPortal(mobileLayer,document.body)}
  </div>;
 }
