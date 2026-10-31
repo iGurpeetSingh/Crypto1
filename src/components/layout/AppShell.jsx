@@ -4,7 +4,7 @@ import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { routeConfig, groupLabels } from '../../app/routeConfig';
 import TopBar from './TopBar';
 import CreateAccountModal from '../auth/CreateAccountModal';
-import {getSessionToken} from '../../services/auth';
+import {hasDemoSession} from '../../services/auth';
 import './AppShell.css';
 
 const icons={
@@ -79,7 +79,7 @@ export default function AppShell(){
   </>}
  </>;
  return <div className={`layout ${desktopOpen?'desktop-sidebar-open':'desktop-sidebar-collapsed'}`}>
-  {!getSessionToken()&&<CreateAccountModal/>}
+  {!hasDemoSession()&&<CreateAccountModal/>}
   <div className="bg-orb bg-orb--1"/><div className="bg-orb bg-orb--2"/><div className="bg-orb bg-orb--3"/>
   <aside className="sidebar desktop-sidebar" aria-label="Main navigation">
    <Navigation/>
