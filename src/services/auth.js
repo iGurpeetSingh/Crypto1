@@ -32,8 +32,8 @@ export function createDemoSession({name,email,phone='',accountId,pin}){
  const cleanPin=String(pin||'').trim();
  if(cleanName.length<2) throw new Error('Please enter your full name.');
  if(!/^[^\\s@]+@gmail\\.com$/.test(cleanEmail)) throw new Error('Please enter a valid Gmail address ending in @gmail.com.');
- if(!/^\\d{8}$/.test(cleanAccountId)) throw new Error('Demo Account ID must be exactly 8 digits.');
- if(!/^\\d{8}$/.test(cleanPin)) throw new Error('Account PIN must be exactly 8 digits.');
+ if(!/^\\d{10}$/.test(cleanAccountId)) throw new Error('Demo Account ID must be exactly 10 digits.');
+ if(!/^\\d{8}$/.test(cleanPin)) throw new Error('Account PIN must be exactly 10 digits.');
  const users=readUsers();
  if(users[cleanEmail]) throw new Error('An account already exists with this Gmail. Choose Login to open it.');
  if(Object.values(users).some(user=>String(user.accountId)===cleanAccountId)) throw new Error('This Demo Account ID is already in use. Choose another one.');
