@@ -142,7 +142,7 @@ export default function TradingPage() {
       <div className="terminal-center">
         <section className="terminal-panel terminal-chart-panel">
           <div className="terminal-chart-title"><b>{pair}</b><small>Market chart · public prices</small></div>
-          <PriceChart data={asset?.history || []} title={asset?.symbol || 'BTC'} symbol={asset?.symbol || 'BTC'} height={360} />
+          <PriceChart data={asset?.history || []} title={asset?.symbol || 'BTC'} symbol={asset?.symbol || 'BTC'} height={360} markets={markets} />
         </section>
         <section className="terminal-panel terminal-order-entry">
           <div className="terminal-order-heading"><b>Demo Spot Trading</b><span>Available <strong>${money(cash)}</strong></span><span>Fee <strong>0.10%</strong></span></div>
