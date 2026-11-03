@@ -15,7 +15,7 @@ export default function CreateAccountModal(){
  const submit=async event=>{
   event.preventDefault();setError('');
   if(name.trim().length<2){setError('Please enter your full name.');return;}
-  if(!/^[^\\s@]+@gmail\\.com$/i.test(email.trim())){setError('Please enter a valid Gmail address ending in @gmail.com.');return;}
+  if(!/^[^\s@]+@gmail\.com$/i.test(email.trim())){setError('Please enter a valid Gmail address ending in @gmail.com.');return;}
   setBusy(true);
   try{
    if(!otpSent){
@@ -25,7 +25,7 @@ export default function CreateAccountModal(){
     setOtpSent(true);setOtp('');
     return;
    }
-   if(!/^\\d{6}$/.test(otp))throw new Error('Enter the 6-digit OTP sent to your Gmail.');
+   if(!/^\d{6}$/.test(otp))throw new Error('Enter the 6-digit OTP sent to your Gmail.');
    const response=await fetch('/api/auth/verify-otp',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,otp})});
    const data=await response.json();
    if(!response.ok)throw new Error(data.error||'OTP verification failed.');
@@ -49,7 +49,7 @@ export default function CreateAccountModal(){
    <form onSubmit={submit} className="create-account-form">
     <label>Full name<input autoComplete="name" value={name} disabled={otpSent} onChange={e=>setName(e.target.value)} placeholder="Enter your full name" minLength="2" maxLength="80" required/></label>
     <label>Gmail address<input type="email" autoComplete="email" value={email} disabled={otpSent} onChange={e=>setEmail(e.target.value)} placeholder="you@gmail.com" required/></label>
-    {otpSent&&<label>6-digit Gmail OTP<input inputMode="numeric" autoComplete="one-time-code" value={otp} onChange={e=>setOtp(e.target.value.replace(/\\D/g,'').slice(0,6))} placeholder="Enter OTP from your Gmail" maxLength="6" required/></label>}\n    <button className="create-account-submit" type="submit" disabled={busy}>{busy?'Please wait…':otpSent?'Verify OTP & Continue':'Send Gmail OTP'}</button>\n    {otpSent&&<button type="button" className="create-account-back" onClick={()=>{setOtpSent(false);setOtp('');setError('');}}>Change Gmail / Request another OTP</button>}
+    {otpSent&&<label>6-digit Gmail OTP<input inputMode="numeric" autoComplete="one-time-code" value={otp} onChange={e=>setOtp(e.target.value.replace(/\D/g,'').slice(0,6))} placeholder="Enter OTP from your Gmail" maxLength="6" required/></label>}\n    <button className="create-account-submit" type="submit" disabled={busy}>{busy?'Please wait…':otpSent?'Verify OTP & Continue':'Send Gmail OTP'}</button>\n    {otpSent&&<button type="button" className="create-account-back" onClick={()=>{setOtpSent(false);setOtp('');setError('');}}>Change Gmail / Request another OTP</button>}
    </form>
    <button type="button" className="create-account-recovery-toggle" onClick={()=>{setShowRecovery(v=>!v);setError('');}}>
     {showRecovery?'Hide returning-user login':'Already have an account? Login with Account Number + PIN'}
