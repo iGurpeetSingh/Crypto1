@@ -24,7 +24,7 @@ export default function CreateAccountModal(){
   event.preventDefault();setError('');
   if(name.trim().length<2){setError('Please enter your full name.');return;}
   if(!/^[^\\s@]+@gmail\\.com$/i.test(email.trim())){setError('Please enter a valid Gmail address ending in @gmail.com.');return;}
-  if(!/^\\d{8}$/.test(accountId.trim())){setError('Demo Account ID must contain exactly 8 digits.');return;}
+  if(!/^\\d{8}$/.test(accountId.trim())){setError('Demo Account ID must contain exactly 10 digits.');return;}
   if(!/^\\d{8}$/.test(pin)){setError('Account PIN must contain exactly 8 digits.');return;}
   if(mode==='create'&&pin!==confirmPin){setError('PIN and Confirm PIN do not match.');return;}
   setBusy(true);
@@ -53,7 +53,7 @@ export default function CreateAccountModal(){
    <form onSubmit={submit} className="create-account-form">
     <label>Full name<input autoComplete="name" value={name} onChange={e=>setName(e.target.value)} placeholder="Enter your full name" minLength="2" maxLength="80" required/></label>
     <label>Gmail address<input type="email" autoComplete="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@gmail.com" required/></label>
-    <label>Demo Account ID (8 digits)<input type="text" inputMode="numeric" autoComplete="off" value={accountId} onChange={e=>setAccountId(e.target.value.replace(/\\D/g,'').slice(0,8))} placeholder="Enter 8-digit account ID" maxLength="8" pattern="\\d{8}" required/></label>
+    <label>Demo Account ID (10 digits)<input type="text" inputMode="numeric" autoComplete="off" value={accountId} onChange={e=>setAccountId(e.target.value.replace(/\\D/g,'').slice(0,10))} placeholder="Enter 10-digit account ID" maxLength="10" pattern="\\d{10}" required/></label>
     <label>Account PIN (8 digits)<input type="password" inputMode="numeric" autoComplete={mode==='login'?'current-password':'new-password'} value={pin} onChange={e=>setPin(e.target.value.replace(/\\D/g,'').slice(0,8))} placeholder="Enter your 8-digit PIN" maxLength="8" pattern="\\d{8}" required/></label>
     {mode==='create'&&<label>Confirm Account PIN<input type="password" inputMode="numeric" autoComplete="new-password" value={confirmPin} onChange={e=>setConfirmPin(e.target.value.replace(/\\D/g,'').slice(0,8))} placeholder="Re-enter your 8-digit PIN" maxLength="8" pattern="\\d{8}" required/></label>}
     <button className="create-account-submit" type="submit" disabled={busy}>{busy?'Please wait…':mode==='create'?'Create Demo Account':'Login to Demo Account'}</button>
