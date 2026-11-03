@@ -41,6 +41,16 @@ export function enterDemoAccount({name,email,accountId='',pin=''}){
  const id=String(accountId||'').trim(),secret=String(pin||'').trim();
  const users=readUsers(),existing=users[identity.email];
  if(existing){
+  // Existing records from the earlier broken onboarding may never have reached
+  // the dashboard where the generated credentials are shown. Grant one first
+  // access without credentials, then require ID + PIN on every later login.
+  if(existing.firstAccessCompleted!==true){
+   if(String(existing.name||'').trim().toLowerCase()!==identity.name.toLowerCase()) throw new Error('Name does not match this account.');
+   const firstAccessProfile={...existing,firstAccessCompleted:true};
+   users[identity.email]=firstAccessProfile;
+   localStorage.setItem(USERS_KEY,JSON.stringify(users));
+   return {profile:openProfile(firstAccessProfile),created:false,firstAccess:true};
+  }
   if(!id&&!secret) throw new Error('Welcome back. Enter your saved Demo Account ID and 8-digit PIN to reopen your account.');
   if(!/^\d{10}$/.test(id)) throw new Error('Enter your saved 10-digit Demo Account ID.');
   if(!/^\d{8}$/.test(secret)) throw new Error('Enter your saved 8-digit Account PIN.');
@@ -50,7 +60,7 @@ export function enterDemoAccount({name,email,accountId='',pin=''}){
   return {profile:openProfile(existing),created:false};
  }
  if(id||secret) throw new Error('No account was found for this Gmail. Leave Account ID and PIN empty to create a new demo account.');
- const profile={id:'demo_'+Date.now()+'_'+Math.random().toString(36).slice(2,8),name:identity.name,fullName:identity.name,email:identity.email,accountId:uniqueAccountId(users),pin:randomDigits(8),role:'USER',accountType:'DEMO',createdAt:new Date().toISOString()};
+ const profile={id:'demo_'+Date.now()+'_'+Math.random().toString(36).slice(2,8),name:identity.name,fullName:identity.name,email:identity.email,accountId:uniqueAccountId(users),pin:randomDigits(8),firstAccessCompleted:true,role:'USER',accountType:'DEMO',createdAt:new Date().toISOString()};
  users[identity.email]=profile;
  localStorage.setItem(USERS_KEY,JSON.stringify(users));
  return {profile:openProfile(profile),created:true};
