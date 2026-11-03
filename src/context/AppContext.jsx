@@ -76,28 +76,71 @@ export function AppProvider({ children }) {
   useEffect(() => { refresh(); const timer = setInterval(refresh, 60000); return () => clearInterval(timer); }, [refresh]);
   useEffect(() => {
     let socket;
-    try {
-      socket = new WebSocket('wss://stream.binance.com:9443/ws/!ticker@arr');
-      socket.onmessage = event => {
-        try {
-          const ticks = JSON.parse(event.data);
-          if (!Array.isArray(ticks)) return;
-          const prices = new Map(ticks.filter(t => String(t.s || '').endsWith('USDT')).map(t => [String(t.s).replace(/USDT$/, ''), Number(t.c)]));
-          setMarkets(prev => {
-            let changed = false;
-            const next = prev.map(m => {
-              const livePrice = prices.get(String(m.symbol).toUpperCase());
-              if (!(livePrice > 0) || livePrice === m.price) return m;
-              changed = true;
-              return { ...m, price: livePrice };
-            });
-            return changed ? next : prev;
-          });
-          setLastUpdated(new Date().toISOString());
-        } catch { /* Ignore malformed public ticker messages. */ }
-      };
-    } catch (error) { console.warn('Live ticker stream unavailable:', error); }
-    return () => { if (socket && socket.readyState <= 1) socket.close(); };
+    let reconnectTimer;
+    let pollTimer;
+    let stopped = false;
+    let reconnectDelay = 1000;
+
+    const applyPrices = rows => {
+      if (!Array.isArray(rows) || stopped) return;
+      const prices = new Map(rows
+        .filter(t => String(t.symbol || t.s || '').endsWith('USDT'))
+        .map(t => [String(t.symbol || t.s).replace(/USDT$/, '').toUpperCase(), Number(t.price || t.c)]));
+      setMarkets(prev => {
+        let changed = false;
+        const next = prev.map(m => {
+          const livePrice = prices.get(String(m.symbol).toUpperCase());
+          if (!(livePrice > 0) || livePrice === m.price) return m;
+          changed = true;
+          return { ...m, price: livePrice };
+        });
+        return changed ? next : prev;
+      });
+      setLastUpdated(new Date().toISOString());
+      setMarketSource('Binance live market feed');
+    };
+
+    const pollPrices = async () => {
+      try {
+        const response = await fetch('https://api.binance.com/api/v3/ticker/price', { cache: 'no-store' });
+        if (!response.ok) throw new Error('Ticker request failed: ' + response.status);
+        applyPrices(await response.json());
+      } catch (error) {
+        if (!stopped) console.warn('Live price polling failed:', error.message);
+      }
+    };
+
+    const connect = () => {
+      if (stopped) return;
+      try {
+        socket = new WebSocket('wss://stream.binance.com:9443/ws/!ticker@arr');
+        socket.onopen = () => { reconnectDelay = 1000; };
+        socket.onmessage = event => {
+          try { applyPrices(JSON.parse(event.data)); }
+          catch { /* Ignore malformed public ticker messages. */ }
+        };
+        socket.onerror = () => { if (socket) socket.close(); };
+        socket.onclose = () => {
+          if (stopped) return;
+          reconnectTimer = setTimeout(connect, reconnectDelay);
+          reconnectDelay = Math.min(reconnectDelay * 2, 30000);
+        };
+      } catch (error) {
+        console.warn('Live ticker stream unavailable:', error);
+        reconnectTimer = setTimeout(connect, reconnectDelay);
+        reconnectDelay = Math.min(reconnectDelay * 2, 30000);
+      }
+    };
+
+    pollPrices();
+    pollTimer = setInterval(pollPrices, 5000);
+    connect();
+    return () => {
+      stopped = true;
+      clearInterval(pollTimer);
+      clearTimeout(reconnectTimer);
+      if (socket && socket.readyState <= 1) socket.close();
+    };
   }, []);
 
   useEffect(() => { save({ cash, funding: 0, holdings, orders, pendingOrders, transactions, settings, walletVersion: 2 }); }, [cash, funding, holdings, orders, pendingOrders, transactions, settings]);
