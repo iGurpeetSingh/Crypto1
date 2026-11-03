@@ -1,10 +1,13 @@
-import {useNavigate} from 'react-router-dom';
-import {NavLink} from 'react-router-dom';
+import {useNavigate,NavLink} from 'react-router-dom';
 import {useApp} from '../../context/AppContext';
+import {getStoredProfile,logout} from '../../services/auth';
 import './TopBar.css';
-import { playWelcomeVoice } from '../../services/welcomeVoice';
+import {playWelcomeVoice} from '../../services/welcomeVoice';
 export default function TopBar(){
- const navigate=useNavigate();const {refresh,marketSource}=useApp();
+ const navigate=useNavigate();
+ const {refresh,marketSource}=useApp();
+ const profile=getStoredProfile();
+ const handleLogout=()=>{logout();window.dispatchEvent(new Event('crypto1:logout'));};
  return <header className="topbar topbar-global">
   <button className="topbar-brand" onClick={()=>navigate('/dashboard')}><span className="topbar-brand-icon">₿</span><span>Crypto<span style={{color:'var(--secondary)'}}>Dash</span></span></button>
   <nav className="topbar-main-nav" aria-label="Main navigation">
@@ -14,5 +17,6 @@ export default function TopBar(){
   <span className="topbar-market-status">{marketSource?.toLowerCase().includes('live')?'● LIVE MARKET':'● DEMO MARKET'}</span>
   <button className="topbar-btn topbar-voice" onClick={playWelcomeVoice} title="Play welcome voice" aria-label="Play welcome voice">🔊 Welcome</button>
   <button className="topbar-btn topbar-refresh" onClick={refresh}><span aria-hidden="true">↻</span> Refresh</button>
+  {profile&&<button className="topbar-btn topbar-logout" onClick={handleLogout} title="Log out of this demo account">Log out</button>}
  </header>;
 }
