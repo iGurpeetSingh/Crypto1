@@ -19,13 +19,14 @@ export default function WalletPage(){
   <GlassCard className="page-header"><h1>Wallet</h1><p className="page-subtitle">Your single USD demo wallet for simulated crypto trading</p></GlassCard>
   <GlassCard>
    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:16,flexWrap:'wrap'}}>
-    <div><span className="real-wallet-eyebrow">MAIN DEMO WALLET · USD</span><h2 style={{fontSize:38,margin:'12px 0'}}>{money(cash)}</h2><p style={{opacity:.7,margin:0}}>Starting balance: $500.00 · Simulated funds only</p></div>
+    <div><span className="real-wallet-eyebrow">TOTAL DEMO ACCOUNT VALUE · USD</span><h2 style={{fontSize:38,margin:'12px 0',color:'#42DDAA'}}>{money(portfolio?.totalValue ?? cash)}</h2><p style={{opacity:.7,margin:0}}>Available USD: {money(cash)} · Open asset value: {money(portfolio?.investedValue || 0)} · Simulated funds only</p></div>
     <span className="demo-badge">SIMULATED TRADING</span>
    </div>
   </GlassCard>
   <div className="grid grid-3" style={{marginTop:20}}>
-   <MetricCard label="Available Balance" value={money(cash)} subtitle="Available for simulated buy orders" accent="#42DDAA"/>
-   <MetricCard label="Portfolio Value" value={money(portfolio?.investedValue||0)} subtitle="Current value of your crypto holdings" accent="#C084FC"/>
+   <MetricCard label="Total Account Value" value={money(portfolio?.totalValue ?? cash)} subtitle="Available USD + current crypto holdings" accent="#42DDAA"/>
+   <MetricCard label="Available USD" value={money(cash)} subtitle="Free balance for new buy orders" accent="#42DDAA"/>
+   <MetricCard label="Open Asset Value" value={money(portfolio?.investedValue||0)} subtitle="Live market value of open holdings" accent="#C084FC"/>
    <MetricCard label="Total Profit / Loss" value={money(portfolio?.totalProfitLoss||0)} subtitle="Realized + unrealized demo P/L" accent={(portfolio?.totalProfitLoss||0)>=0?'#42DDAA':'#FF6B8A'}/>
   </div>
   <div className="grid grid-2" style={{marginTop:20}}>
