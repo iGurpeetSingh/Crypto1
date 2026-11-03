@@ -18,7 +18,7 @@ export default function CreateAccountModal(){
   if(!/^[^\s@]+@gmail\.com$/i.test(email.trim())){setError('Please enter a valid Gmail address ending in @gmail.com.');return;}
   setBusy(true);
   try{
-   const result=enterDemoAccount({name,email,accountId,pin});
+   enterDemoAccount({name,email,accountId:showRecovery?accountId:'',pin:showRecovery?pin:''});
    navigate('/dashboard',{replace:true});
   }catch(err){const message=err.message||'Could not open your demo account.';setError(message);if(/saved Demo Account ID|saved 10-digit|saved 8-digit|No account was found/i.test(message))setShowRecovery(true);}
   finally{setBusy(false);}
