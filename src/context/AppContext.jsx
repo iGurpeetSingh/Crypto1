@@ -74,6 +74,32 @@ export function AppProvider({ children }) {
   }, []);
 
   useEffect(() => { refresh(); const timer = setInterval(refresh, 60000); return () => clearInterval(timer); }, [refresh]);
+  useEffect(() => {
+    let socket;
+    try {
+      socket = new WebSocket('wss://stream.binance.com:9443/ws/!ticker@arr');
+      socket.onmessage = event => {
+        try {
+          const ticks = JSON.parse(event.data);
+          if (!Array.isArray(ticks)) return;
+          const prices = new Map(ticks.filter(t => String(t.s || '').endsWith('USDT')).map(t => [String(t.s).replace(/USDT$/, ''), Number(t.c)]));
+          setMarkets(prev => {
+            let changed = false;
+            const next = prev.map(m => {
+              const livePrice = prices.get(String(m.symbol).toUpperCase());
+              if (!(livePrice > 0) || livePrice === m.price) return m;
+              changed = true;
+              return { ...m, price: livePrice };
+            });
+            return changed ? next : prev;
+          });
+          setLastUpdated(new Date().toISOString());
+        } catch { /* Ignore malformed public ticker messages. */ }
+      };
+    } catch (error) { console.warn('Live ticker stream unavailable:', error); }
+    return () => { if (socket && socket.readyState <= 1) socket.close(); };
+  }, []);
+
   useEffect(() => { save({ cash, funding: 0, holdings, orders, pendingOrders, transactions, settings, walletVersion: 2 }); }, [cash, funding, holdings, orders, pendingOrders, transactions, settings]);
 
   const portfolio = useMemo(() => {
