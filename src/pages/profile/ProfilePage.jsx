@@ -4,6 +4,7 @@ import {useApp} from '../../context/AppContext';
 import {getStoredProfile,logout} from '../../services/auth';
 import {GlassCard} from '../../components/common/GlassCard';
 import './ProfilePage.css';
+/* Account recovery credentials styles are kept with this profile page. */
 
 const money=value=>Number(value||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
 const signed=value=>(Number(value)>=0?'+':'−')+'$'+money(Math.abs(Number(value||0)));
@@ -11,6 +12,9 @@ const dateKey=value=>{const d=new Date(value);return d.getFullYear()+'-'+String(
 export default function ProfilePage(){
  const {orders,markets,cash,portfolio}=useApp();
  const [profile]=useState(()=>getStoredProfile());
+ const [showPin,setShowPin]=useState(false);
+ const [copied,setCopied]=useState('');
+ const copyValue=async(value,label)=>{try{await navigator.clipboard.writeText(String(value));setCopied(label);window.setTimeout(()=>setCopied(''),1800)}catch{setCopied('Clipboard unavailable. Select and copy the value manually.')}};
  const navigate=useNavigate();
  const daily=useMemo(()=>{
   const map={};
@@ -44,6 +48,14 @@ export default function ProfilePage(){
    <div className="crypto-profile-id"><h2>{name}</h2><p>{email}</p><span>● Demo account · {phone}</span></div>
    <button className="crypto-profile-logout" onClick={()=>{logout();navigate('/dashboard',{replace:true});window.location.reload();}}>Logout</button>
   </section>
+  <GlassCard className="profile-credentials-card">
+   <div className="profile-daily-heading"><div><h3>Account Login Details</h3><p>Save these details. You will need the Account Number and PIN when you log in again.</p></div><span className="demo-badge">DEMO ACCOUNT</span></div>
+   <div className="profile-credential-row"><div><span>Gmail ID</span><strong>{profile?.email||'—'}</strong></div><button type="button" onClick={()=>copyValue(profile?.email||'', 'Gmail copied')} disabled={!profile?.email}>Copy Gmail</button></div>
+   <div className="profile-credential-row"><div><span>Demo Account Number</span><strong>{profile?.accountId||'—'}</strong></div><button type="button" onClick={()=>copyValue(profile?.accountId||'', 'Account Number copied')} disabled={!profile?.accountId}>Copy Account Number</button></div>
+   <div className="profile-credential-row"><div><span>8-digit Share PIN</span><strong className="profile-credential-pin">{profile?.pin?(showPin?profile.pin:'••••••••'):'PIN not available on this saved profile'}</strong></div><div className="profile-credential-actions"><button type="button" onClick={()=>setShowPin(v=>!v)} disabled={!profile?.pin}>{showPin?'Hide PIN':'Show PIN'}</button><button type="button" onClick={()=>copyValue(profile?.pin||'', 'PIN copied')} disabled={!profile?.pin}>Copy PIN</button></div></div>
+   {copied&&<p className="profile-credentials-feedback" role="status">{copied}</p>}
+   <small className="profile-credentials-note">Demo-only credentials are stored in this browser. Keep them private and do not reuse a banking PIN.</small>
+  </GlassCard>
   <GlassCard className="profile-account-balance"><span>DEMO ACCOUNT VALUE</span><strong style={{display:"block",color:"#42DDAA",fontSize:32,fontWeight:800,margin:"8px 0"}}>${money(portfolio?.totalValue ?? cash)}</strong><small>Available USD: ${money(cash)} · Open assets: ${money(portfolio?.investedValue || 0)}</small></GlassCard>
   <section className="profile-daily-section">
    <div className="profile-daily-heading"><div><h2>Today's Trading P/L</h2><p>Profit and loss from completed demo sell trades today</p></div><span className="profile-today-date">{new Date().toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'short',year:'numeric'})}</span></div>
