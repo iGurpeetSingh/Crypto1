@@ -31,7 +31,7 @@ function openProfile(profile){
 function validateIdentity(name,email){
  const n=String(name||'').trim(),e=String(email||'').trim().toLowerCase();
  if(n.length<2) throw new Error('Please enter your full name.');
- if(!/^[^\\s@]+@gmail\\.com$/.test(e)) throw new Error('Please enter a valid Gmail address ending in @gmail.com.');
+ if(!/^[^\s@]+@gmail\.com$/.test(e)) throw new Error('Please enter a valid Gmail address ending in @gmail.com.');
  return {name:n,email:e};
 }
 // First visit: name + Gmail creates account and generates Account ID + PIN.
@@ -42,8 +42,8 @@ export function enterDemoAccount({name,email,accountId='',pin=''}){
  const users=readUsers(),existing=users[identity.email];
  if(existing){
   if(!id&&!secret) throw new Error('Welcome back. Enter your saved Demo Account ID and 8-digit PIN to reopen your account.');
-  if(!/^\\d{10}$/.test(id)) throw new Error('Enter your saved 10-digit Demo Account ID.');
-  if(!/^\\d{8}$/.test(secret)) throw new Error('Enter your saved 8-digit Account PIN.');
+  if(!/^\d{10}$/.test(id)) throw new Error('Enter your saved 10-digit Demo Account ID.');
+  if(!/^\d{8}$/.test(secret)) throw new Error('Enter your saved 8-digit Account PIN.');
   if(String(existing.name||'').trim().toLowerCase()!==identity.name.toLowerCase()) throw new Error('Name does not match this account.');
   if(String(existing.accountId)!==id) throw new Error('Demo Account ID is incorrect.');
   if(String(existing.pin)!==secret) throw new Error('Incorrect Account PIN. Please try again.');
