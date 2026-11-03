@@ -33,11 +33,12 @@ export function createDemoSession({name,email,phone='',accountId,pin}){
  if(cleanName.length<2) throw new Error('Please enter your full name.');
  if(!/^[^\\s@]+@gmail\\.com$/.test(cleanEmail)) throw new Error('Please enter a valid Gmail address ending in @gmail.com.');
  if(!/^\\d{10}$/.test(cleanAccountId)) throw new Error('Demo Account ID must be exactly 10 digits.');
- if(!/^\\d{8}$/.test(cleanPin)) throw new Error('Account PIN must be exactly 10 digits.');
+ if(!/^\\d{8}$/.test(cleanPin)) throw new Error('Account PIN must be exactly 8 digits.');
  const users=readUsers();
- if(users[cleanEmail]) throw new Error('An account already exists with this Gmail. Choose Login to open it.');
- if(Object.values(users).some(user=>String(user.accountId)===cleanAccountId)) throw new Error('This Demo Account ID is already in use. Choose another one.');
- const profile={id:'demo_'+Date.now()+'_'+Math.random().toString(36).slice(2,8),name:cleanName,fullName:cleanName,email:cleanEmail,phone:String(phone||'').trim(),accountId:cleanAccountId,pin:cleanPin,role:'USER',accountType:'DEMO',createdAt:new Date().toISOString()};
+ const existing=users[cleanEmail];
+ if(existing?.accountId&&existing?.pin) throw new Error('An account already exists with this Gmail. Choose Login to open it.');
+ if(Object.values(users).some(user=>user!==existing&&String(user.accountId||'')===cleanAccountId)) throw new Error('This Demo Account ID is already in use. Choose another one.');
+ const profile={...(existing||{}),id:existing?.id||('demo_'+Date.now()+'_'+Math.random().toString(36).slice(2,8)),name:cleanName,fullName:cleanName,email:cleanEmail,phone:String(phone||existing?.phone||'').trim(),accountId:cleanAccountId,pin:cleanPin,role:existing?.role||'USER',accountType:'DEMO',createdAt:existing?.createdAt||new Date().toISOString()};
  users[cleanEmail]=profile;
  localStorage.setItem(USERS_KEY,JSON.stringify(users));
  return openProfile(profile);
