@@ -37,7 +37,7 @@ export default function CreateAccountModal(){
   }catch(err){
    const message=err.message||'Could not continue.';
    setError(message);
-   if(/saved Demo Account ID|saved 10-digit|saved 8-digit|No account was found|Welcome back|Account Number/i.test(message))setShowRecovery(true);
+   if(/saved Demo Account ID|saved 10-digit|saved 8-digit|No account was found|Welcome back|Account Number/i.test(message)){setShowRecovery(true);setOtpSent(false);setOtp('');}
   }finally{setBusy(false);}
  };
  return <div className="create-account-overlay" role="dialog" aria-modal="true" aria-labelledby="create-account-title">
