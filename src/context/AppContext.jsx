@@ -146,6 +146,24 @@ export function AppProvider({ children }) {
     return item;
   }, [markets, holdings, cash, persist]);
 
+  const closeTradePosition = useCallback((orderId) => {
+    const sourceOrder = orders.find(order => order.id === orderId);
+    if (!sourceOrder || sourceOrder.type !== 'BUY') throw new Error('Only a buy trade can close an open long position.');
+    const holding = holdings.find(item => item.id === sourceOrder.assetId);
+    const availableQuantity = Number(holding?.quantity || 0);
+    const closeQuantity = Math.min(Number(sourceOrder.quantity || 0), availableQuantity);
+    if (!(closeQuantity > 0)) throw new Error('There is no remaining open quantity for this trade.');
+    return trade({ side: 'sell', assetId: sourceOrder.assetId, quantity: closeQuantity });
+  }, [orders, holdings, trade]);
+
+  const removeTradeRecord = useCallback((orderId) => {
+    setOrders(prev => {
+      const next = prev.filter(order => order.id !== orderId);
+      persist({ orders: next });
+      return next;
+    });
+  }, [persist]);
+
   const cancelLimitOrder = useCallback((orderId) => {
     setPendingOrders(prev => {
       const next = prev.map(order => order.id === orderId && order.status === 'OPEN'
@@ -221,7 +239,7 @@ export function AppProvider({ children }) {
     setTransactions(prev=>{const next=[{id:'TX-'+Date.now(),type:type.toUpperCase(),description:'Demo '+type,amount:value,createdAt:new Date().toISOString()},...prev];persist({transactions:next});return next;});
   },[cash,persist]);
 
-  const value = { markets, portfolio, cash, balances:cash+funding, funding, holdings, orders, pendingOrders, transactions, watchlist, alerts, settings, loading, error:null, marketSource, lastUpdated, refresh, trade, placeLimitOrder, cancelLimitOrder, moveFunds, addDemoFunds, toasts:[], showToast:()=>{}, dismissToast:()=>{} };
+  const value = { markets, portfolio, cash, balances:cash+funding, funding, holdings, orders, pendingOrders, transactions, watchlist, alerts, settings, loading, error:null, marketSource, lastUpdated, refresh, trade, placeLimitOrder, cancelLimitOrder, closeTradePosition, removeTradeRecord, moveFunds, addDemoFunds, toasts:[], showToast:()=>{}, dismissToast:()=>{} };
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }
 export function useApp(){const ctx=useContext(AppContext);if(!ctx)throw new Error('useApp must be used within AppProvider');return ctx;}
