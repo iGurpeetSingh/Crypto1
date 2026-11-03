@@ -11,11 +11,14 @@ const SEED_MARKETS = [
   ['chainlink','Chainlink','LINK',17.5,2.2,410000000],['tron','TRON','TRX',0.12,0.8,250000000]
 ].map(([id,name,symbol,price,change24,volume24]) => ({id,name,symbol,price,change24,volume24,marketCap:0,history:Array.from({length:36},(_,i)=>({price:price*(1+(Math.sin(i/4)*0.018)+(i/36*change24/100)),date:i}))}));
 
+function activeStorageKey() {
+  try { return localStorage.getItem('crypto1_active_wallet_key') || STORAGE_KEY; } catch { return STORAGE_KEY; }
+}
 function readSaved() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null'); } catch { return null; }
+  try { return JSON.parse(localStorage.getItem(activeStorageKey()) || 'null'); } catch { return null; }
 }
 function save(data) {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (e) { console.warn('Could not save demo account', e); }
+  try { localStorage.setItem(activeStorageKey(), JSON.stringify(data)); } catch (e) { console.warn('Could not save demo account', e); }
 }
 const savedState = readSaved();
 const initial = savedState?.walletVersion === 2 ? {
@@ -144,6 +147,23 @@ export function AppProvider({ children }) {
       clearTimeout(reconnectTimer);
       if (socket && socket.readyState <= 1) socket.close();
     };
+  }, []);
+
+  useEffect(() => {
+    const loadNewAccountWallet = event => {
+      const wallet = event.detail?.wallet;
+      if (!wallet) return;
+      setCash(Number(wallet.cash ?? 500));
+      setFunding(0);
+      setFundingClaimedAt(wallet.fundingClaimedAt || new Date().toISOString());
+      setHoldings(wallet.holdings || []);
+      setOrders(wallet.orders || []);
+      setPendingOrders(wallet.pendingOrders || []);
+      setTransactions(wallet.transactions || []);
+      setSettings(wallet.settings || {});
+    };
+    window.addEventListener('crypto1:account-ready', loadNewAccountWallet);
+    return () => window.removeEventListener('crypto1:account-ready', loadNewAccountWallet);
   }, []);
 
   useEffect(() => { save({ cash, funding: 0, fundingClaimedAt, holdings, orders, pendingOrders, transactions, settings, walletVersion: 2 }); }, [cash, fundingClaimedAt, holdings, orders, pendingOrders, transactions, settings]);
