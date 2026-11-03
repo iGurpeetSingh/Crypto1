@@ -21,14 +21,16 @@ const savedState = readSaved();
 const initial = savedState?.walletVersion === 2 ? {
   ...savedState,
   cash: Number.isFinite(Number(savedState.cash)) ? Number(savedState.cash) : 500,
-  funding: 0
+  funding: 0,
+  fundingClaimedAt: savedState.fundingClaimedAt || new Date().toISOString()
 } : savedState ? {
   ...savedState,
   cash: 500,
   funding: 0,
-  walletVersion: 2
+  walletVersion: 2,
+  fundingClaimedAt: savedState.fundingClaimedAt || new Date().toISOString()
 } : {
-  cash: 500, funding: 0, holdings: [], orders: [], transactions: [], walletVersion: 2,
+  cash: 500, funding: 0, holdings: [], orders: [], transactions: [], walletVersion: 2, fundingClaimedAt: new Date().toISOString(),
   settings: { theme: 'pink-glass', accent: '#FF5CA8', currency: 'USD', locale: 'en-US', tableDensity: 'normal' }
 };
 
@@ -36,6 +38,7 @@ export function AppProvider({ children }) {
   const [markets,setMarkets] = useState(SEED_MARKETS);
   const [cash,setCash] = useState(initial.cash ?? 500);
   const [funding,setFunding] = useState(initial.funding ?? 0);
+  const [fundingClaimedAt,setFundingClaimedAt] = useState(initial.fundingClaimedAt || new Date().toISOString());
   const [holdings,setHoldings] = useState(initial.holdings || []);
   const [orders,setOrders] = useState(initial.orders || []);
   const [pendingOrders,setPendingOrders] = useState(initial.pendingOrders || []);
@@ -48,9 +51,9 @@ export function AppProvider({ children }) {
   const [alerts] = useState([]);
 
   const persist = useCallback((patch) => {
-    const next = { cash, funding, holdings, orders, pendingOrders, transactions, settings, ...patch };
+    const next = { cash, funding, fundingClaimedAt, holdings, orders, pendingOrders, transactions, settings, ...patch };
     save(next);
-  }, [cash,funding,holdings,orders,pendingOrders,transactions,settings]);
+  }, [cash,funding,fundingClaimedAt,holdings,orders,pendingOrders,transactions,settings]);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -143,7 +146,7 @@ export function AppProvider({ children }) {
     };
   }, []);
 
-  useEffect(() => { save({ cash, funding: 0, holdings, orders, pendingOrders, transactions, settings, walletVersion: 2 }); }, [cash, funding, holdings, orders, pendingOrders, transactions, settings]);
+  useEffect(() => { save({ cash, funding: 0, fundingClaimedAt, holdings, orders, pendingOrders, transactions, settings, walletVersion: 2 }); }, [cash, fundingClaimedAt, holdings, orders, pendingOrders, transactions, settings]);
 
   const portfolio = useMemo(() => {
     const assets = holdings.map(h => ({...h}));
@@ -308,7 +311,30 @@ export function AppProvider({ children }) {
     setTransactions(prev=>{const next=[{id:'TX-'+Date.now(),type:type.toUpperCase(),description:'Demo '+type,amount:value,createdAt:new Date().toISOString()},...prev];persist({transactions:next});return next;});
   },[cash,persist]);
 
-  const value = { markets, portfolio, cash, balances:cash+funding, funding, holdings, orders, pendingOrders, transactions, watchlist, alerts, settings, loading, error:null, marketSource, lastUpdated, refresh, trade, placeLimitOrder, cancelLimitOrder, closeTradePosition, removeTradeRecord, moveFunds, addDemoFunds, toasts:[], showToast:()=>{}, dismissToast:()=>{} };
+  const claimDailyDemoFunds = useCallback(() => {
+    const now = Date.now();
+    const lastClaim = new Date(fundingClaimedAt).getTime();
+    const cooldown = 24 * 60 * 60 * 1000;
+    if (Number.isFinite(lastClaim) && now - lastClaim < cooldown) {
+      const remaining = cooldown - (now - lastClaim);
+      const hours = Math.floor(remaining / 3600000);
+      const minutes = Math.floor((remaining % 3600000) / 60000);
+      throw new Error('Next $500 demo funds are available in ' + hours + 'h ' + minutes + 'm.');
+    }
+    const nextCash = cash + 500;
+    const claimedAt = new Date(now).toISOString();
+    setCash(nextCash);
+    setFundingClaimedAt(claimedAt);
+    persist({ cash: nextCash, fundingClaimedAt: claimedAt });
+    setTransactions(prev => {
+      const next = [{ id: 'TX-' + now, type: 'DEPOSIT', description: 'Daily $500 demo funds claim', amount: 500, createdAt: claimedAt }, ...prev].slice(0, 100);
+      persist({ transactions: next, cash: nextCash, fundingClaimedAt: claimedAt });
+      return next;
+    });
+    return { amount: 500, nextAvailableAt: new Date(now + cooldown).toISOString() };
+  }, [cash, fundingClaimedAt, persist]);
+
+  const value = { markets, portfolio, cash, balances:cash+funding, funding, holdings, orders, pendingOrders, transactions, watchlist, alerts, settings, loading, error:null, marketSource, lastUpdated, refresh, trade, placeLimitOrder, cancelLimitOrder, closeTradePosition, removeTradeRecord, moveFunds, addDemoFunds, claimDailyDemoFunds, fundingClaimedAt, toasts:[], showToast:()=>{}, dismissToast:()=>{} };
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }
 export function useApp(){const ctx=useContext(AppContext);if(!ctx)throw new Error('useApp must be used within AppProvider');return ctx;}
