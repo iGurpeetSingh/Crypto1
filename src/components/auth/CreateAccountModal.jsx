@@ -24,7 +24,7 @@ export default function CreateAccountModal(){
   event.preventDefault();setError('');
   if(name.trim().length<2){setError('Please enter your full name.');return;}
   if(!/^[^\\s@]+@gmail\\.com$/i.test(email.trim())){setError('Please enter a valid Gmail address ending in @gmail.com.');return;}
-  if(!/^\\d{8}$/.test(accountId.trim())){setError('Demo Account ID must contain exactly 10 digits.');return;}
+  if(!/^\\d{10}$/.test(accountId.trim())){setError('Demo Account ID must contain exactly 10 digits.');return;}
   if(!/^\\d{8}$/.test(pin)){setError('Account PIN must contain exactly 8 digits.');return;}
   if(mode==='create'&&pin!==confirmPin){setError('PIN and Confirm PIN do not match.');return;}
   setBusy(true);
