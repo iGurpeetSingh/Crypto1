@@ -9,7 +9,7 @@ const money=value=>Number(value||0).toLocaleString('en-US',{minimumFractionDigit
 const signed=value=>(Number(value)>=0?'+':'−')+'$'+money(Math.abs(Number(value||0)));
 const dateKey=value=>{const d=new Date(value);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
 export default function ProfilePage(){
- const {orders,markets}=useApp();
+ const {orders,markets,cash,portfolio}=useApp();
  const [profile]=useState(()=>getStoredProfile());
  const navigate=useNavigate();
  const daily=useMemo(()=>{
@@ -44,6 +44,7 @@ export default function ProfilePage(){
    <div className="crypto-profile-id"><h2>{name}</h2><p>{email}</p><span>● Demo account · {phone}</span></div>
    <button className="crypto-profile-logout" onClick={()=>{logout();navigate('/dashboard',{replace:true});window.location.reload();}}>Logout</button>
   </section>
+  <GlassCard className="profile-account-balance"><span>DEMO ACCOUNT VALUE</span><strong>${money(portfolio?.totalValue ?? cash)}</strong><small>Available USD: ${money(cash)} · Open assets: ${money(portfolio?.investedValue || 0)}</small></GlassCard>
   <section className="profile-daily-section">
    <div className="profile-daily-heading"><div><h2>Today's Trading P/L</h2><p>Profit and loss from completed demo sell trades today</p></div><span className="profile-today-date">{new Date().toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'short',year:'numeric'})}</span></div>
    <div className="profile-daily-cards">
