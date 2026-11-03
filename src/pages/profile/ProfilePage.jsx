@@ -44,7 +44,7 @@ export default function ProfilePage(){
    <div className="crypto-profile-id"><h2>{name}</h2><p>{email}</p><span>● Demo account · {phone}</span></div>
    <button className="crypto-profile-logout" onClick={()=>{logout();navigate('/dashboard',{replace:true});window.location.reload();}}>Logout</button>
   </section>
-  <GlassCard className="profile-account-balance"><span>DEMO ACCOUNT VALUE</span><strong>${money(portfolio?.totalValue ?? cash)}</strong><small>Available USD: ${money(cash)} · Open assets: ${money(portfolio?.investedValue || 0)}</small></GlassCard>
+  <GlassCard className="profile-account-balance"><span>DEMO ACCOUNT VALUE</span><strong style={{display:"block",color:"#42DDAA",fontSize:32,fontWeight:800,margin:"8px 0"}}>${money(portfolio?.totalValue ?? cash)}</strong><small>Available USD: ${money(cash)} · Open assets: ${money(portfolio?.investedValue || 0)}</small></GlassCard>
   <section className="profile-daily-section">
    <div className="profile-daily-heading"><div><h2>Today's Trading P/L</h2><p>Profit and loss from completed demo sell trades today</p></div><span className="profile-today-date">{new Date().toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'short',year:'numeric'})}</span></div>
    <div className="profile-daily-cards">
