@@ -9,7 +9,7 @@ const dayKey = value => { const d = new Date(value); return d.getFullYear() + '-
 const pairFor = symbol => String(symbol || 'BTC').toUpperCase().replace(/USDT$/, '') + 'USDT';
 
 export default function TradingPage() {
-  const { markets, trade, placeLimitOrder, cancelLimitOrder, orders, pendingOrders, cash, holdings, transactions, portfolio } = useApp();
+  const { markets, trade, placeLimitOrder, cancelLimitOrder, closeTradePosition, removeTradeRecord, orders, pendingOrders, cash, holdings, transactions, portfolio } = useApp();
   const [assetId, setAssetId] = useState('bitcoin');
   const [side, setSide] = useState('buy');
   const [orderType, setOrderType] = useState('market');
@@ -20,6 +20,8 @@ export default function TradingPage() {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [tableTab, setTableTab] = useState('trades');
+  const [openTradeMenu, setOpenTradeMenu] = useState(null);
+  const [tradeActionMessage, setTradeActionMessage] = useState('');
   const [book, setBook] = useState({ bids: [], asks: [] });
   const [recentTrades, setRecentTrades] = useState([]);
   const [feedState, setFeedState] = useState('Connecting to public market feed');
@@ -204,13 +206,14 @@ export default function TradingPage() {
       <div className="terminal-history-tabs">
         {[['open', 'Open Orders', openOrders.length], ['orders', 'Order History', orders.length], ['trades', 'My Trades', marketTrades.length], ['funds', 'Funds', transactions.length]].map(([id, label, count]) => <button key={id} className={tableTab === id ? 'active' : ''} onClick={() => setTableTab(id)}>{label} <span>{count}</span></button>)}
       </div>
+      {tradeActionMessage && <div className="trade-action-feedback" role="status">{tradeActionMessage}<button type="button" onClick={() => setTradeActionMessage('')}>×</button></div>}
       <div className="terminal-table-scroll">
         <table>
-          <thead><tr>{tableTab === 'open' ? <><th>Date</th><th>Pair</th><th>Side</th><th>Limit Price</th><th>Amount</th><th>Status</th><th>Action</th></> : tableTab === 'funds' ? <><th>Date</th><th>Type</th><th>Description</th><th>Amount</th></> : <><th>Date</th><th>Pair</th><th>Side</th><th>Price</th><th>Amount</th><th>Fee</th><th>Profit / Loss</th><th>Status</th></>}</tr></thead>
+          <thead><tr>{tableTab === 'open' ? <><th>Date</th><th>Pair</th><th>Side</th><th>Limit Price</th><th>Amount</th><th>Status</th><th>Action</th></> : tableTab === 'funds' ? <><th>Date</th><th>Type</th><th>Description</th><th>Amount</th></> : <><th>Date</th><th>Pair</th><th>Side</th><th>Price</th><th>Amount</th><th>Fee</th><th>Profit / Loss</th><th>Status</th><th>Action</th></>}</tr></thead>
           <tbody>{rows.map((row, i) => <tr key={row.id || i}>
             {tableTab === 'open' ? <><td>{new Date(row.createdAt).toLocaleString()}</td><td>{row.symbol}/USDT</td><td>{row.side}</td><td>{money(row.limitPrice)}</td><td>{money(row.quantity, 6)}</td><td>{row.status}</td><td>{row.status === 'OPEN' && <button className="terminal-cancel" onClick={() => cancelLimitOrder(row.id)}>Cancel</button>}</td></>
               : tableTab === 'funds' ? <><td>{new Date(row.createdAt).toLocaleString()}</td><td>{row.type}</td><td>{row.description}</td><td>{signedMoney(row.amount)}</td></>
-              : <><td>{new Date(row.createdAt).toLocaleString()}</td><td>{row.symbol}/USDT</td><td className={row.type === 'BUY' ? 'positive' : 'negative'}>{row.type}</td><td>{money(row.price)}</td><td>{money(row.quantity, 6)}</td><td>{money(row.fee)}</td><td className={livePnlFor(row) >= 0 ? 'positive' : 'negative'}>{signedMoney(livePnlFor(row))}</td><td>{row.status}</td></>}
+              : <><td>{new Date(row.createdAt).toLocaleString()}</td><td>{row.symbol}/USDT</td><td className={row.type === 'BUY' ? 'positive' : 'negative'}>{row.type}</td><td>{money(row.price)}</td><td>{money(row.quantity, 6)}</td><td>{money(row.fee)}</td><td className={livePnlFor(row) >= 0 ? 'positive' : 'negative'}>{signedMoney(livePnlFor(row))}</td><td>{row.status}</td><td className="trade-action-cell"><button type="button" className="trade-more-button" aria-label="Trade actions" aria-expanded={openTradeMenu === row.id} onClick={() => setOpenTradeMenu(openTradeMenu === row.id ? null : row.id)}>⋮</button>{openTradeMenu === row.id && <div className="trade-action-menu"><button type="button" disabled={row.type !== 'BUY' || !holdings.some(h => h.id === row.assetId && h.quantity > 0)} onClick={() => { try { const closed = closeTradePosition(row.id); setTradeActionMessage('Position closed. Sell trade ' + closed.id + ' recorded.'); } catch (err) { setTradeActionMessage(err.message || 'Could not close trade.'); } setOpenTradeMenu(null); }}>Close position</button><button type="button" className="danger" onClick={() => { removeTradeRecord(row.id); setTradeActionMessage('Trade removed from history. Wallet balance was not changed.'); setOpenTradeMenu(null); }}>Remove from history</button></div>}</td></>}
           </tr>)}</tbody>
         </table>
         {!rows.length && <div className="terminal-empty">No records yet. Your trades will appear here after placing an order.</div>}
