@@ -6,3 +6,17 @@
 .topbar-logout{white-space:nowrap;border-color:rgba(248,113,113,.35)!important;color:#fca5a5!important;background:rgba(127,29,29,.16)!important}
 .topbar-logout:hover{background:rgba(127,29,29,.3)!important}
 @media(max-width:760px){.topbar-global .topbar-logout{display:flex!important;padding:7px 8px;font-size:10px}}
+
+.create-account-optional{display:inline!important;color:#6f879e;font-size:.68rem;font-weight:500}
+.created-credentials{display:grid;gap:12px;margin:20px 0}
+.created-credentials>div{display:grid;grid-template-columns:1fr auto;align-items:center;gap:8px 14px;padding:14px;border:1px solid rgba(45,212,191,.28);border-radius:12px;background:rgba(13,148,136,.1)}
+.created-credentials>div span{grid-column:1/-1;color:#91a9bc;font-size:.72rem}
+.created-credentials>div strong{font-size:1.45rem;letter-spacing:.12em;color:#5eead4;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.created-credentials>div button{border:1px solid rgba(45,212,191,.3);border-radius:8px;padding:8px 10px;background:rgba(20,184,166,.12);color:#5eead4;font-weight:700;cursor:pointer}
+.profile-pin-panel{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-top:16px;padding:16px;border:1px solid rgba(45,212,191,.25);border-radius:13px;background:rgba(13,148,136,.08)}
+.profile-pin-label{display:block;color:var(--text-secondary);font-size:.75rem;margin-bottom:7px}
+.profile-pin-value{display:block;font-size:1.35rem;letter-spacing:.14em;font-variant-numeric:tabular-nums;color:var(--text-primary)}
+.profile-pin-panel p{margin:7px 0 0;color:var(--text-secondary);font-size:.72rem;line-height:1.5}
+.profile-pin-actions{display:flex;gap:8px;flex-wrap:wrap}
+.profile-security-note{margin:16px 0 0;color:var(--text-secondary);font-size:.72rem;line-height:1.6}
+.topbar-btn:disabled{opacity:.45;cursor:not-allowed}
