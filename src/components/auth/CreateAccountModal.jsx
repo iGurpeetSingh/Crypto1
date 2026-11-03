@@ -10,7 +10,9 @@ export default function CreateAccountModal(){
  const [pin,setPin]=useState('');
  const [busy,setBusy]=useState(false);
  const [error,setError]=useState('');
- const [showRecovery,setShowRecovery]=useState(false);\n const [otp,setOtp]=useState('');\n const [otpSent,setOtpSent]=useState(false);
+ const [showRecovery,setShowRecovery]=useState(false);
+ const [otp,setOtp]=useState('');
+ const [otpSent,setOtpSent]=useState(false);
  const navigate=useNavigate();
  const submit=async event=>{
   event.preventDefault();setError('');
@@ -49,7 +51,9 @@ export default function CreateAccountModal(){
    <form onSubmit={submit} className="create-account-form">
     <label>Full name<input autoComplete="name" value={name} disabled={otpSent} onChange={e=>setName(e.target.value)} placeholder="Enter your full name" minLength="2" maxLength="80" required/></label>
     <label>Gmail address<input type="email" autoComplete="email" value={email} disabled={otpSent} onChange={e=>setEmail(e.target.value)} placeholder="you@gmail.com" required/></label>
-    {otpSent&&<label>6-digit Gmail OTP<input inputMode="numeric" autoComplete="one-time-code" value={otp} onChange={e=>setOtp(e.target.value.replace(/\D/g,'').slice(0,6))} placeholder="Enter OTP from your Gmail" maxLength="6" required/></label>}\n    <button className="create-account-submit" type="submit" disabled={busy}>{busy?'Please wait…':otpSent?'Verify OTP & Continue':'Send Gmail OTP'}</button>\n    {otpSent&&<button type="button" className="create-account-back" onClick={()=>{setOtpSent(false);setOtp('');setError('');}}>Change Gmail / Request another OTP</button>}
+    {otpSent&&<label>6-digit Gmail OTP<input inputMode="numeric" autoComplete="one-time-code" value={otp} onChange={e=>setOtp(e.target.value.replace(/\D/g,'').slice(0,6))} placeholder="Enter OTP from your Gmail" maxLength="6" required/></label>}
+    <button className="create-account-submit" type="submit" disabled={busy}>{busy?'Please wait…':otpSent?'Verify OTP & Continue':'Send Gmail OTP'}</button>
+    {otpSent&&<button type="button" className="create-account-back" onClick={()=>{setOtpSent(false);setOtp('');setError('');}}>Change Gmail / Request another OTP</button>}
    </form>
    <button type="button" className="create-account-recovery-toggle" onClick={()=>{setShowRecovery(v=>!v);setError('');}}>
     {showRecovery?'Hide returning-user login':'Already have an account? Login with Account Number + PIN'}
