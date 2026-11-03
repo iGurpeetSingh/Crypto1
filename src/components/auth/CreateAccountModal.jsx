@@ -5,7 +5,7 @@ import './CreateAccountModal.css';
 import {playWelcomeVoice} from '../../services/welcomeVoice';
 
 function hasSavedAccounts(){
- try { return Object.keys(JSON.parse(localStorage.getItem('crypto1_demo_users')||'{}')).length>0; }
+ try { const users=JSON.parse(localStorage.getItem('crypto1_demo_users')||'{}'); return Object.values(users).some(user=>user?.accountId&&user?.pin); }
  catch { return false; }
 }
 
