@@ -82,9 +82,6 @@ export default function PriceChart({ symbol = 'BTC', title = 'BTC/USDT', height 
           </header>
           <div className="full-chart-layout">
             <main className="full-chart-main">
-              <div className="full-chart-toolbar">
-                <span>Chart</span><span>Indicators</span><span>Alert</span><span>Replay</span><span className="full-chart-toolbar-note">TradingView interactive chart</span>
-              </div>
               <iframe
                 key={activeSymbol + '-full'}
                 title={activeSymbol + ' full interactive TradingView chart'}
